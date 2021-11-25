@@ -1,8 +1,12 @@
+#include <GL/glew.h> //Needs to be before other OpenGL libraries
 #include <GLFW/glfw3.h>
+#include <glm.hpp>
+#include <iostream>
 
 int main(void)
 {
     GLFWwindow* window;
+    glm::vec3 hej;
 
     /* Initialize the library */
     if (!glfwInit())
@@ -18,6 +22,9 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
+
+    if (glewInit() != GLEW_OK)
+        std::cout << "Error with glew \n";
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
