@@ -5,6 +5,10 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 
+#include "vendor/imgui/imgui.h"
+#include "vendor/imgui/imgui_impl_glfw.h"
+#include "vendor/imgui/imgui_impl_opengl3.h"
+
 #include "MatrixStack.hpp" //Dynamic (currently static) matrix stack //BASED ON STEGU's code from TMN061
 #include "Renderer.h"
 #include "VertexBuffer.h"
@@ -56,10 +60,10 @@ int main(void)
         std::cout << "Error with glew \n";
     {
         float positions[] = {
-            100.0f, 100.0f, 0.0f, 0.0f,
-            200.0f, 100.0f, 1.0f, 0.0f,
-            200.0f, 200.0f, 1.0f, 1.0f,
-            100.0f, 200.0f, 0.0f, 1.0f
+            -50.0f, -50.0f, 0.0f, 0.0f,
+             50.0f, -50.0f, 1.0f, 0.0f,
+             50.0f,  50.0f, 1.0f, 1.0f,
+            -50.0f,  50.0f, 0.0f, 1.0f
         };
 
         unsigned int indices[] = {
@@ -85,7 +89,7 @@ int main(void)
         IndexBuffer ib(indices, 6);
 
         glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f); //Projection matrix
-        glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0)); //View matrix
+        glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)); //View matrix
         glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200, 200, 0)); //Model matrix
 
         glm::mat4 mvp = proj * view * model;
@@ -107,6 +111,12 @@ int main(void)
 
         Renderer renderer;
 
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); 
+
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init((char*)glGetString(GL_NUM_SHADING_LANGUAGE_VERSIONS));
+
         float r = 0.0f;
         float increment = 0.05f;
 
@@ -115,16 +125,35 @@ int main(void)
         //GLUquadricObj* quad = gluNewQuadric();
         //gluCylinder(quad, 2.f, 3.f, 3.f, 32, 32);
 
+        // Debug
+        glm::vec3 translationA(200, 200, 0);
+        glm::vec3 translationB(400, 200, 0);
+
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
             /* Render here */
             renderer.Clear();
 
-            shader.Bind();
-            shader.SetUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
 
-            renderer.Draw(va, ib, shader);
+            shader.Bind();
+
+            {
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), translationA); //Model matrix
+                glm::mat4 mvp = proj * view * model;
+                shader.SetUniformMat4f("u_MVP", mvp);
+                renderer.Draw(va, ib, shader);
+            }
+            
+            {
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), translationB); //Model matrix
+                glm::mat4 mvp = proj * view * model;
+                shader.SetUniformMat4f("u_MVP", mvp);
+                renderer.Draw(va, ib, shader);
+            }
 
             //Color animation
             if (r > 1.0f)
@@ -132,7 +161,16 @@ int main(void)
             else if (r < 0.0f)
                 increment = 0.05f;
 
-            r += increment;
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::SliderFloat3("Translation A", &translationA.x, 0.0f, 960.0f); 
+            ImGui::SliderFloat3("Translation B", &translationB.x, 0.0f, 960.0f);
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);
@@ -142,6 +180,11 @@ int main(void)
         }
 
     }
+
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwTerminate();
     return 0;
