@@ -40,9 +40,9 @@ int gluggGetNumVertices();
 int gluggGetNumIndices();
 void gluggArraysToElements(); // Needed before gluggGetNumIndices
 
-void gluggSetPositionName(char *name);
-void gluggSetNormalName(char *name);
-void gluggSetTexCoordName(char *name);
+void gluggSetPositionName(const char *name);
+void gluggSetNormalName(const char *name);
+void gluggSetTexCoordName(const char *name);
 
 // Matrix stack support
 void gluggPushMatrix();

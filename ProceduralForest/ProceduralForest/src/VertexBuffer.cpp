@@ -15,10 +15,10 @@ VertexBuffer::~VertexBuffer()
 
 void VertexBuffer::Bind() const
 {
-    glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_RendererID));
 }
 
 void VertexBuffer::UnBind() const
 {
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }

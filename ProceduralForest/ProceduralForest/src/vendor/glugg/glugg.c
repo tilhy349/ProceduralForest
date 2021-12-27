@@ -560,21 +560,21 @@ char positionName[GLUGGSTRING] = "in_Position";
 char normalName[GLUGGSTRING] = "in_Normal";
 char texCoordName[GLUGGSTRING] = "in_TexCoord";
 
-//void gluggSetPositionName(char *name)
-//{
-//	if (strlen(name) < GLUGGSTRING)
-//		strcpy(positionName, name);
-//}
-//void gluggSetNormalName(char *name)
-//{
-//	if (strlen(name) < GLUGGSTRING)
-//		strcpy(normalName, name);
-//}
-//void gluggSetTexCoordName(char *name)
-//{
-//	if (strlen(name) < GLUGGSTRING)
-//		strcpy(texCoordName, name);
-//}
+void gluggSetPositionName(const char *name)
+{
+	if (strlen(name) < GLUGGSTRING)
+		strcpy_s(positionName, GLUGGSTRING, name);
+}
+void gluggSetNormalName(const char *name)
+{
+	if (strlen(name) < GLUGGSTRING)
+		strcpy_s(normalName, GLUGGSTRING, name);
+}
+void gluggSetTexCoordName(const char *name)
+{
+	if (strlen(name) < GLUGGSTRING)
+		strcpy_s(texCoordName, GLUGGSTRING, name);
+}
 
 
 // gluggEnd is somewhat like glEnd, but returns a VAO identifier and a length.
