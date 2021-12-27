@@ -219,7 +219,7 @@ float operator*(const vec3 &a, const vec3 &b) // vec3 dot vec3
 }
 
 inline
-vec3 operator*(const vec3 &b, double a) // vec3 * scalar
+vec3 operator*(const vec3 &b, float a) // vec3 * scalar
 {
 	return SetVector(a*b.x, a*b.y, a*b.z);
 }

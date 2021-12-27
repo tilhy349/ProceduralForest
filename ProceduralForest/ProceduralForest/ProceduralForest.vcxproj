@@ -153,8 +153,6 @@
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\vendor\glugg\glugg.c" />
-    <ClCompile Include="src\vendor\glugg\LittleOBJLoader.c" />
-    <ClCompile Include="src\vendor\glugg\MicroGlut.c" />
     <ClCompile Include="src\vendor\glugg\VectorUtils3.c" />
     <ClCompile Include="src\vendor\imgui\imgui.cpp" />
     <ClCompile Include="src\vendor\imgui\imgui_demo.cpp" />
@@ -175,8 +173,6 @@
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\vendor\glugg\glugg.h" />
-    <ClInclude Include="src\vendor\glugg\LittleOBJLoader.h" />
-    <ClInclude Include="src\vendor\glugg\MicroGlut.h" />
     <ClInclude Include="src\vendor\glugg\VectorUtils3.h" />
     <ClInclude Include="src\vendor\imgui\imgui.h" />
     <ClInclude Include="src\vendor\imgui\imgui_impl_glfw.h" />

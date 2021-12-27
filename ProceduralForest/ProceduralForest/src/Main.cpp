@@ -7,8 +7,8 @@
 
 //TNM084 lab3 code, Ingemars
 #include "vendor/glugg/glugg.h"
-#include "vendor/glugg/MicroGlut.h"
-#include "vendor/glugg/LittleOBJLoader.h"
+//#include "vendor/glugg/MicroGlut.h"
+//#include "vendor/glugg/LittleOBJLoader.h"
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
@@ -171,10 +171,10 @@ int main(void)
 
         //FLOOR QUAD
         std::vector<float>* vertices = new std::vector<float>{
-        -0.8f, 0.0f, -0.8f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
-         0.8f, 0.0f, -0.8f, 0.0f, 1.0f, 0.0f, 10.0f, 10.0f,
-         0.8f, 0.0f,  0.8f, 0.0f, 1.0f, 0.0f, 10.0f, 0.0f,
-        -0.8f, 0.0f,  0.8f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f
+        -20.0f, 0.0f, -20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
+         20.0f, 0.0f, -20.0f, 0.0f, 1.0f, 0.0f, 10.0f, 10.0f,
+         20.0f, 0.0f,  20.0f, 0.0f, 1.0f, 0.0f, 10.0f, 0.0f,
+        -20.0f, 0.0f,  20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f
         };
 
         std::vector<unsigned int>* indices = new std::vector<unsigned int>{
@@ -199,14 +199,13 @@ int main(void)
         m_IndexBuffer = std::make_unique<IndexBuffer>(static_cast<unsigned int*>(indices->data()), indices->size());
         
         //Projection, view and model matrices
-        //mat4 proj = perspective(45.0f, (float)(width / height), 0.1f, 1000.0f);
-
         glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 1000.0f);
 
-        glm::mat4 view = view = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5, -2.0)); //Model matrix;
+        glm::mat4 view = view = glm::translate(glm::mat4(1.0f), glm::vec3(0, -1.5, -7.0)); //Model matrix;
         glm::mat4 model = glm::mat4(1.0f);
 
         //Testing Ingemars frustum
+        //mat4 proj = perspective(45.0f, (float)(width / height), 0.1f, 1000.0f);
         //mat4 proj = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 300.0);
 
         //Shader shader("res/shaders/Basic.vert", "res/shaders/Basic.frag");
@@ -216,13 +215,13 @@ int main(void)
         shader.SetUniformMat4f("projectionMatrix", proj);
         shader.SetUniformMat4f("modelviewMatrix", view * model);
 
-        Texture texture("res/textures/Poster.png");
+        Texture texture("res/textures/bark.png");
         texture.Bind();
         shader.SetUniform1i("tex", 0);
 
         //MAKING A TREE
         int treecount;
-        //GLuint tree = MakeTree(&treecount, shader.GetRendererID());
+        GLuint tree = MakeTree(&treecount, shader.GetRendererID());
 
         Renderer renderer;
 
@@ -239,16 +238,20 @@ int main(void)
             /* Render here */
             renderer.Clear();
 
+            Texture textureGrass("res/textures/grass.png");
+            textureGrass.Bind();
+            shader.SetUniform1i("tex", 0);
+
             shader.Bind();
 
             renderer.Draw(*m_VAO, *m_IndexBuffer, shader); //Draw pyramid
 
-            //worldToView = lookAtv(campos, VectorAdd(campos, forward), up);
-            //mat4 mv = worldToView;
-            //shader.SetUniformMat4fVU("modelviewMatrix", mv);
-           
-            //glBindVertexArray(tree);	// Select VAO
-            //glDrawArrays(GL_TRIANGLES, 0, treecount);
+            Texture texture("res/textures/bark.png");
+            texture.Bind();
+            shader.SetUniform1i("tex", 0);
+
+            glBindVertexArray(tree);	// Select VAO
+            glDrawArrays(GL_TRIANGLES, 0, treecount);
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);
