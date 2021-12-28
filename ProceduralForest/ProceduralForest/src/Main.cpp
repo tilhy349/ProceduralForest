@@ -127,17 +127,14 @@ int main(void)
         //Test rendering leafs
         std::vector<float>* leafPositions = new std::vector<float>{
              0.0f, 0.0f, 1.0f,
-             0.0f, 0.0f, 1.0f,
-             0.0f, 0.0f, 1.0f,
-             0.0f, 0.0f, 1.0f,
-             0.0f, 0.0f, 1.0f,
-             0.0f, 0.0f, 1.0f
+             1.0f, 0.0f, 1.0f
+
         };
 
         unsigned int instanceVBO;
         glGenBuffers(1, &instanceVBO);
         glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * leafPositions->size(), &leafPositions, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * theForest.leafPositions->size(), theForest.leafPositions->data(), GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         std::vector<float>* leafVertices = new std::vector<float>{
@@ -193,18 +190,20 @@ int main(void)
             shader.Bind();
 
             ////renderer.DrawModel(*ground, shader);
-            //renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
+            renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
             ////renderer.Draw(*ground->m_VAO, *ground->m_IndexBuffer, shader);
             shaderLeaf.Bind();
 
             //glBindVertexArray(quadVAO);
+            renderer.Clear();
+
             leafVAO->Bind();
-            glDrawArraysInstanced(GL_TRIANGLES, 0, 3, leafPositions->size());
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 3, theForest.leafPositions->size());
 
             textureBark.Bind();
             shader.Bind();
 
-            //theForest.Render();
+            theForest.Render();
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);

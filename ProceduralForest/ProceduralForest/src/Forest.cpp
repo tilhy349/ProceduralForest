@@ -58,6 +58,8 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
         }
         else {
             //Create a leaf position
+            gluggPushMatrix();
+            gluggTranslate(0, currentHeight, 0);
             mat4 currentMatrix = gluggCurrentMatrix();
             //vec3 pos = currentMatrix[3];
             //printMat4(currentMatrix);
@@ -67,6 +69,7 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
             vec3 pos = rotation * translation;
             printVec3(pos);
             leafPositions->push_back(pos);
+            gluggPopMatrix();
             break;
         }
     }
