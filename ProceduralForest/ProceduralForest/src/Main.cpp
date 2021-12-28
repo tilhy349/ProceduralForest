@@ -5,113 +5,17 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 
-//TNM084 lab3 code, Ingemars
-#include "vendor/glugg/glugg.h"
-//#include "vendor/glugg/MicroGlut.h"
-//#include "vendor/glugg/LittleOBJLoader.h"
-
 #include "Renderer.h"
-#include "VertexBuffer.h"
-#include "VertexBufferLayout.h"
-#include "IndexBuffer.h"
-#include "VertexArray.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "Geometry.h"
+#include "Forest.h"
 
 #include <iostream>
 #include <vector>
 
 const unsigned int width = 800;
 const unsigned int height = 800;
-
-const char* pos = "inPosition";
-
-void MakeCylinderAlt(int aSlices, float height, float topwidth, float bottomwidth)
-{
-    gluggMode(GLUGG_TRIANGLE_STRIP);
-    vec3 top = SetVector(0, height, 0);
-    vec3 center = SetVector(0, 0, 0);
-    vec3 bn = SetVector(0, -1, 0); // Bottom normal
-    vec3 tn = SetVector(0, 1, 0); // Top normal
-
-    for (float a = 0.0; a < 2.0 * M_PI + 0.0001; a += 2.0 * M_PI / aSlices)
-    {
-        float a1 = a;
-
-        vec3 p1 = SetVector(topwidth * cos(a1), height, topwidth * sin(a1));
-        vec3 p2 = SetVector(bottomwidth * cos(a1), 0, bottomwidth * sin(a1));
-        vec3 pn = SetVector(cos(a1), 0, sin(a1));
-
-        // Done making points and normals. Now create polygons!
-        gluggNormalv(pn);
-        gluggTexCoord(height, a1 / M_PI);
-        gluggVertexv(p2);
-        gluggTexCoord(0, a1 / M_PI);
-        gluggVertexv(p1);
-    }
-
-    // Then walk around the top and bottom with fans
-    gluggMode(GLUGG_TRIANGLE_FAN);
-    gluggNormalv(bn);
-    gluggVertexv(center);
-    // Walk around edge
-    for (float a = 0.0; a <= 2.0 * M_PI + 0.001; a += 2.0 * M_PI / aSlices)
-    {
-        vec3 p = SetVector(bottomwidth * cos(a), 0, bottomwidth * sin(a));
-        gluggVertexv(p);
-    }
-    // Walk around edge
-    gluggMode(GLUGG_TRIANGLE_FAN); // Reset to new fan
-    gluggNormalv(tn);
-    gluggVertexv(top);
-    for (float a = 2.0 * M_PI; a >= -0.001; a -= 2.0 * M_PI / aSlices)
-    {
-        vec3 p = SetVector(topwidth * cos(a), height, topwidth * sin(a));
-        gluggVertexv(p);
-    }
-}
-
-void MakeBranches(const int maxDepth, int currentDepth, float currentHeight, int branches) {
-    branches += rand() % (3 + 1 - 0) + 0;
-    for (int i = 0; i < branches; ++i) {
-        if (currentDepth < maxDepth) {
-            gluggPushMatrix();
-            gluggTranslate(0, currentHeight, 0);
-            gluggScale(0.5, 0.5, 0.5);
-            gluggRotate(i * 3.14 / branches, 0.0, 1.0, 0.0);
-
-            float random = rand() % (7 + 1 - 2) + 2;
-            gluggRotate(3.14 / random, 0.0, 0.0, 1.0);
-
-
-            //printf("current height: %f\n", currentHeight);
-            MakeCylinderAlt(20, currentHeight, 0.1, 0.15);
-
-            MakeBranches(maxDepth, currentDepth + 1, currentHeight, branches);
-        }
-    }
-
-    gluggPopMatrix();
-
-}
-
-GLuint MakeTree(int* count, GLuint program)
-{
-    gluggSetPositionName("inPosition");
-    gluggSetNormalName("inNormal");
-    gluggSetTexCoordName("inTexCoord");
-
-    gluggBegin(GLUGG_TRIANGLES);
-    float height = 2.0;
-    MakeCylinderAlt(20, height, 0.1, 0.15);
-
-    int maxDepth = 2;
-    int branches = 4;
-    MakeBranches(maxDepth, 0, height, branches);
-
-    //gluggPopMatrix();
-    return gluggEnd(count, program, 0);
-}
 
 GLFWwindow* init() {
     GLFWwindow* window;
@@ -165,10 +69,6 @@ int main(void)
         glEnable(GL_BLEND); //Transparency
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        unsigned int vao;
-        GLCall(glGenVertexArrays(1, &vao));
-        GLCall(glBindVertexArray(vao));
-
         //FLOOR QUAD
         std::vector<float>* vertices = new std::vector<float>{
         -20.0f, 0.0f, -20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
@@ -197,6 +97,8 @@ int main(void)
         m_VAO->AddBuffer(vb, layout);
 
         m_IndexBuffer = std::make_unique<IndexBuffer>(static_cast<unsigned int*>(indices->data()), indices->size());
+
+        //std::unique_ptr<Geometry> ground = std::make_unique<Geometry>(vertices, indices); 
         
         //Projection, view and model matrices
         glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 1000.0f);
@@ -215,13 +117,12 @@ int main(void)
         shader.SetUniformMat4f("projectionMatrix", proj);
         shader.SetUniformMat4f("modelviewMatrix", view * model);
 
-        Texture texture("res/textures/bark.png");
-        texture.Bind();
+        Texture textureGrass("res/textures/grass.png");
+        Texture textureBark("res/textures/bark.png");
+        textureBark.Bind();
         shader.SetUniform1i("tex", 0);
 
-        //MAKING A TREE
-        int treecount;
-        GLuint tree = MakeTree(&treecount, shader.GetRendererID());
+        Forest theForest = Forest(shader.GetRendererID());
 
         Renderer renderer;
 
@@ -238,20 +139,19 @@ int main(void)
             /* Render here */
             renderer.Clear();
 
-            Texture textureGrass("res/textures/grass.png");
             textureGrass.Bind();
             shader.SetUniform1i("tex", 0);
 
             shader.Bind();
 
-            renderer.Draw(*m_VAO, *m_IndexBuffer, shader); //Draw pyramid
-
-            Texture texture("res/textures/bark.png");
-            texture.Bind();
+            //renderer.DrawModel(*ground, shader);
+            renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
+            //renderer.Draw(*ground->m_VAO, *ground->m_IndexBuffer, shader);
+            
+            textureBark.Bind();
             shader.SetUniform1i("tex", 0);
 
-            glBindVertexArray(tree);	// Select VAO
-            glDrawArrays(GL_TRIANGLES, 0, treecount);
+            theForest.Render();
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);

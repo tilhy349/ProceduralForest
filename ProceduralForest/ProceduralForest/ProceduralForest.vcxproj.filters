@@ -72,6 +72,9 @@
     <ClCompile Include="src\vendor\glugg\VectorUtils3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Forest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\MatrixStack.hpp">
@@ -132,6 +135,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\vendor\glugg\VectorUtils3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Forest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
