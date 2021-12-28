@@ -1,17 +1,19 @@
 #include "Forest.h"
+#include <iostream>
 
 Forest::Forest(unsigned int program)
 {
+    leafPositions = new std::vector<vec3>();
     gluggSetPositionName("inPosition");
     gluggSetNormalName("inNormal");
     gluggSetTexCoordName("inTexCoord");
 
     gluggBegin(GLUGG_TRIANGLES);
 
-    AddTree(glm::vec3(0, 0, 0), 2.0, 4, 3);
-    AddTree(glm::vec3(2, 0, 0), 2.0, 4, 3);
-    AddTree(glm::vec3(-2, 0, 0), 2.0, 4, 3);
-    AddTree(glm::vec3(1, 0, 2), 2.0, 4, 3);
+    AddTree(glm::vec3(0, 0, 0), 2.0, 1, 3);
+    //AddTree(glm::vec3(2, 0, 0), 2.0, 1, 3);
+    //AddTree(glm::vec3(-2, 0, 0), 2.0, 1, 3);
+    //AddTree(glm::vec3(1, 0, 2), 2.0, 1, 3);
 
     m_RendererID = gluggEnd(&verticeCount, program, 0);
 }
@@ -54,7 +56,22 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
 
             MakeBranches(maxDepth, currentDepth + 1, currentHeight, branches);
         }
+        else {
+            //Create a leaf position
+            mat4 currentMatrix = gluggCurrentMatrix();
+            //vec3 pos = currentMatrix[3];
+            //printMat4(currentMatrix);
+            vec3 translation = vec3{ currentMatrix.m[3], currentMatrix.m[7], currentMatrix.m[11] };
+            mat3 rotation = mat4tomat3(currentMatrix);
+
+            vec3 pos = rotation * translation;
+            printVec3(pos);
+            leafPositions->push_back(pos);
+            break;
+        }
     }
+
+
 
     gluggPopMatrix();
 }

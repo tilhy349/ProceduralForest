@@ -62,7 +62,7 @@ int main(void)
 
     if (window == nullptr)
         return -1;
-    
+
     {
         glEnable(GL_DEPTH_TEST); //Render things according to depth
         glDisable(GL_CULL_FACE);
@@ -99,23 +99,20 @@ int main(void)
         m_IndexBuffer = std::make_unique<IndexBuffer>(static_cast<unsigned int*>(indices->data()), indices->size());
 
         //std::unique_ptr<Geometry> ground = std::make_unique<Geometry>(vertices, indices); 
-        
+
         //Projection, view and model matrices
         glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 1000.0f);
 
-        glm::mat4 view = view = glm::translate(glm::mat4(1.0f), glm::vec3(0, -1.5, -7.0)); //Model matrix;
+        glm::mat4 view = view = glm::translate(glm::mat4(1.0f), glm::vec3(0, -1.5, -8.0)); //View matrix;
         glm::mat4 model = glm::mat4(1.0f);
-
-        //Testing Ingemars frustum
-        //mat4 proj = perspective(45.0f, (float)(width / height), 0.1f, 1000.0f);
-        //mat4 proj = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 300.0);
 
         //Shader shader("res/shaders/Basic.vert", "res/shaders/Basic.frag");
         Shader shader("res/shaders/textured.vert", "res/shaders/textured.frag");
         shader.Bind();
-        
+
         shader.SetUniformMat4f("projectionMatrix", proj);
         shader.SetUniformMat4f("modelviewMatrix", view * model);
+        shader.SetUniform1i("tex", 0);
 
         Texture textureGrass("res/textures/grass.png");
         Texture textureBark("res/textures/bark.png");
@@ -123,15 +120,67 @@ int main(void)
         shader.SetUniform1i("tex", 0);
 
         Forest theForest = Forest(shader.GetRendererID());
+        //std::cout << "number of leaves " << theForest.leafPositions.size();
 
         Renderer renderer;
 
-        // View
-        GLfloat a = 0.0;
-        vec3 campos = { 0, 1.5, 10 };
-        vec3 forward = { 0, 0, -4 };
-        vec3 up = { 0, 1, 0 };
-        mat4 worldToView, m;
+        //Test rendering leafs
+        std::vector<float>* leafPositions = new std::vector<float>{
+             0.0f, 0.0f, 1.0f,
+             0.0f, 0.0f, 1.0f,
+             0.0f, 0.0f, 1.0f,
+             0.0f, 0.0f, 1.0f,
+             0.0f, 0.0f, 1.0f,
+             0.0f, 0.0f, 1.0f
+        };
+
+        unsigned int instanceVBO;
+        glGenBuffers(1, &instanceVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * leafPositions->size(), &leafPositions, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        std::vector<float>* leafVertices = new std::vector<float>{
+            -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
+             0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
+             0.0f, 0.25f,  0.0f, 0.0f, 1.0f
+        };
+
+        //Test with own classes
+        std::unique_ptr<VertexArray> leafVAO;
+        leafVAO = std::make_unique<VertexArray>();
+        VertexBuffer leafVB(static_cast<void*>(leafVertices->data()), leafVertices->size() * sizeof(float));
+
+        VertexBufferLayout layoutLeaf;
+        layoutLeaf.Push<float>(3);
+        layoutLeaf.Push<float>(2);
+
+        leafVAO->AddBuffer(leafVB, layoutLeaf);
+
+        //unsigned int quadVAO, quadVBO;
+        unsigned int quadVBO;
+        //glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        //glBindVertexArray(quadVAO);
+        leafVAO->Bind();
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, leafVertices->size(), leafVertices, GL_STATIC_DRAW);
+
+        /*glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
+        // also set instance data
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, instanceVBO); // this attribute comes from a different vertex buffer
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
+
+        Shader shaderLeaf("res/shaders/leaf.vert", "res/shaders/leaf.frag");
+        shaderLeaf.Bind();
+        shaderLeaf.SetUniformMat4f("projectionMatrix", proj);
+        shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
@@ -140,18 +189,22 @@ int main(void)
             renderer.Clear();
 
             textureGrass.Bind();
-            shader.SetUniform1i("tex", 0);
 
             shader.Bind();
 
-            //renderer.DrawModel(*ground, shader);
-            renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
-            //renderer.Draw(*ground->m_VAO, *ground->m_IndexBuffer, shader);
-            
-            textureBark.Bind();
-            shader.SetUniform1i("tex", 0);
+            ////renderer.DrawModel(*ground, shader);
+            //renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
+            ////renderer.Draw(*ground->m_VAO, *ground->m_IndexBuffer, shader);
+            shaderLeaf.Bind();
 
-            theForest.Render();
+            //glBindVertexArray(quadVAO);
+            leafVAO->Bind();
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 3, leafPositions->size());
+
+            textureBark.Bind();
+            shader.Bind();
+
+            //theForest.Render();
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);

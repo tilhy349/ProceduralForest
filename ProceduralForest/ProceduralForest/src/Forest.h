@@ -1,6 +1,7 @@
 #pragma once
 #include "vendor/glugg/glugg.h"
 #include <glm.hpp>
+#include <vector>
 
 class Forest
 {
@@ -13,6 +14,8 @@ public:
 	~Forest();
 
 	void Render();
+
+	std::vector<vec3>* leafPositions;
 
 private:
 	void AddTree(glm::vec3 pos, float height, float maxDepth, float maxBranches);
