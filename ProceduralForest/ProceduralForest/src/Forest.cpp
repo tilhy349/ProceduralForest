@@ -16,7 +16,7 @@ Forest::Forest(unsigned int program)
 
     AddTree(glm::vec3(0, 0, 0), 1.5, 5, 2);
     AddTree(glm::vec3(-2, 0, 0), 2.0, 2, 3);
-    AddTree(glm::vec3(2, 0, 0), 2.2, 3, 3);
+    AddTree(glm::vec3(2, 0, 0), 2.2, 6, 2);
     
     //AddTree(glm::vec3(-2, 0, 0), 3.0, 3, 3);
     //AddTree(glm::vec3(1, 0, 2), 2.0, 1, 3);
@@ -71,12 +71,12 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
             //Create a leaf position
             gluggPushMatrix();
             gluggTranslate(0, currentHeight + 0.25, 0);
-            gluggScale(maxDepth * maxDepth, maxDepth * maxDepth, maxDepth * maxDepth);
+            gluggScale(pow(2, maxDepth), pow(2, maxDepth), pow(2, maxDepth));
             //std::cout << "max depth" << maxDepth << "\n";
             //gluggScale(10, 10, 10); //TODO: Remove scaling from current matrix
             mat4 currentMatrix = gluggCurrentMatrix();
 
-            printMat4(currentMatrix);
+            //printMat4(currentMatrix);
 
             //The currentMatrix is stored columnwise in 4 vectors
             leafMatrixRow1->push_back(vec4{ currentMatrix.m[0], currentMatrix.m[4], currentMatrix.m[8], currentMatrix.m[12] });

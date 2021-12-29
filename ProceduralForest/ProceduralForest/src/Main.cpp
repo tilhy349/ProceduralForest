@@ -214,10 +214,14 @@ int main(void)
             theForest.Render();
 
             //----Render leaves-----
+            glDepthMask(GL_FALSE); //Disable writing into the depth buffer (not really sure why this is needed)
+
             textureLeaf.Bind();
             shaderLeaf.Bind();
             leafVAO->Bind();
             glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances);
+
+            glDepthMask(GL_TRUE); //Enable writing into the depth buffer
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);
