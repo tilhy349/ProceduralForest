@@ -14,9 +14,11 @@ Forest::Forest(unsigned int program)
 
     gluggBegin(GLUGG_TRIANGLES);
 
-    AddTree(glm::vec3(0, 0, 0), 2.0, 1, 2);
-    AddTree(glm::vec3(2, 0, 0), 1.5, 2, 3);
-    AddTree(glm::vec3(-2, 0, 0), 3.0, 3, 3);
+    AddTree(glm::vec3(0, 0, 0), 1.5, 5, 2);
+    AddTree(glm::vec3(-2, 0, 0), 2.0, 2, 3);
+    AddTree(glm::vec3(2, 0, 0), 2.2, 3, 3);
+    
+    //AddTree(glm::vec3(-2, 0, 0), 3.0, 3, 3);
     //AddTree(glm::vec3(1, 0, 2), 2.0, 1, 3);
 
     m_RendererID = gluggEnd(&verticeCount, program, 0);
@@ -39,18 +41,21 @@ void Forest::AddTree(glm::vec3 pos, float height, float maxDepth, float maxBranc
 
     CreateCylinder(20, height, 0.1, 0.15);
 
-    MakeBranches(maxDepth, 0, height, maxBranches);
+    MakeBranches(maxDepth, 0, height, 0.1, 0.15, maxBranches);
     gluggPopMatrix();
 }
 
-void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHeight, int branches)
+void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHeight, float currentBottonWidth, float currentTopWidth, int branches)
 {
-    branches += rand() % (3 + 1 - 0) + 0;
+    //branches += rand() % (3 + 1 - 0) + 0;
+    //currentHeight = currentHeight / 2;
+    currentBottonWidth = currentBottonWidth / 2;
+    currentTopWidth = currentTopWidth / 2;
+
     for (int i = 0; i < branches; ++i) {
         if (currentDepth < maxDepth) {
             gluggPushMatrix();
             gluggTranslate(0, currentHeight, 0);
-
           
             gluggScale(0.5, 0.5, 0.5);
             gluggRotate(i * 3.14 / branches, 0.0, 1.0, 0.0);
@@ -60,16 +65,18 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
 
             CreateCylinder(20, currentHeight, 0.1, 0.15);
 
-            MakeBranches(maxDepth, currentDepth + 1, currentHeight, branches);
+            MakeBranches(maxDepth, currentDepth + 1, currentHeight, currentBottonWidth, currentTopWidth, branches);
         }
         else {
             //Create a leaf position
             gluggPushMatrix();
-            gluggTranslate(0, currentHeight, 0);
-            //gluggScale(2 * maxDepth, 2 * maxDepth, 2 * maxDepth); //TODO: Remove scaling from current matrix
+            gluggTranslate(0, currentHeight + 0.25, 0);
+            gluggScale(maxDepth * maxDepth, maxDepth * maxDepth, maxDepth * maxDepth);
+            //std::cout << "max depth" << maxDepth << "\n";
+            //gluggScale(10, 10, 10); //TODO: Remove scaling from current matrix
             mat4 currentMatrix = gluggCurrentMatrix();
 
-            //printMat4(currentMatrix);
+            printMat4(currentMatrix);
 
             //The currentMatrix is stored columnwise in 4 vectors
             leafMatrixRow1->push_back(vec4{ currentMatrix.m[0], currentMatrix.m[4], currentMatrix.m[8], currentMatrix.m[12] });
@@ -80,8 +87,6 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
             break;
         }
     }
-
-
 
     gluggPopMatrix();
 }

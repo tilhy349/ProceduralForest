@@ -99,6 +99,7 @@ int main(void)
         m_IndexBuffer = std::make_unique<IndexBuffer>(static_cast<unsigned int*>(indices->data()), indices->size());
 
         //std::unique_ptr<Geometry> ground = std::make_unique<Geometry>(vertices, indices); 
+        //Geometry ground(vertices, indices);
 
         //Projection, view and model matrices
         glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 1000.0f);
@@ -116,21 +117,13 @@ int main(void)
 
         Texture textureGrass("res/textures/grass.png");
         Texture textureBark("res/textures/bark.png");
+        Texture textureLeaf("res/textures/leaf.png");
         textureBark.Bind();
-        shader.SetUniform1i("tex", 0);
 
         Forest theForest = Forest(shader.GetRendererID());
         //std::cout << "number of leaves " << theForest.leafPositions.size();
 
         Renderer renderer;
-
-        //Test rendering leafs
-        /*std::vector<float>* leafPositions = new std::vector<float>{
-             0.0f, 0.0f, 1.0f,
-             1.0f, 0.0f, 1.0f
-
-        };*/
-
         
         //Test with own classes
         //TODO: REMOVE THIS FROM MAIN INTO A FUNCTION
@@ -146,9 +139,13 @@ int main(void)
             numberOfInstances * 4 * sizeof(float));
 
         std::vector<float>* leafVertices = new std::vector<float>{
-            -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
-             0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
-             0.0f, 0.25f,  0.0f, 0.0f, 1.0f
+            -0.25f,  0.25f,  0.0f, 0.0f, 1.0f,
+            -0.25f, -0.25f,  0.0f, 0.0f, 0.0f,
+             0.25f, -0.25f,  0.0f, 1.0f, 0.0f, 
+
+            -0.25f,  0.25f,  0.0f, 0.0f, 1.0f,
+             0.25f, -0.25f,  0.0f, 1.0f, 0.0f,
+             0.25f,  0.25f,  0.0f, 1.0f, 1.0f
         };
         
         std::unique_ptr<VertexArray> leafVAO = std::make_unique<VertexArray>();
@@ -190,6 +187,7 @@ int main(void)
         shaderLeaf.Bind();
         shaderLeaf.SetUniformMat4f("projectionMatrix", proj);
         shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
+        shaderLeaf.SetUniform1i("u_Texture", 0);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
@@ -197,24 +195,29 @@ int main(void)
             /* Render here */
             renderer.Clear();
 
+            //----Render ground-----
             textureGrass.Bind();
-            //shader.SetUniform1i("tex", 0);
+
             shader.Bind();
 
-            ////renderer.DrawModel(*ground, shader);
+            //renderer.DrawModel(*ground, shader);
             renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
-            ////renderer.Draw(*ground->m_VAO, *ground->m_IndexBuffer, shader);
-            shaderLeaf.Bind();
+            //renderer.Draw(*ground->m_VAO, *ground->m_IndexBuffer, shader);
+            
 
             //renderer.Clear();
 
-            leafVAO->Bind();
-            glDrawArraysInstanced(GL_TRIANGLES, 0, 3, numberOfInstances);
-
+            //----Render forest-----
             textureBark.Bind();
             shader.Bind();
 
             theForest.Render();
+
+            //----Render leaves-----
+            textureLeaf.Bind();
+            shaderLeaf.Bind();
+            leafVAO->Bind();
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances);
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);
