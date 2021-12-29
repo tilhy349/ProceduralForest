@@ -1,7 +1,7 @@
 #version 330 core
 
 in vec2 texCoord;
-in vec3 colorOffset;
+//in vec3 colorOffset;
 
 out vec4 color;
 

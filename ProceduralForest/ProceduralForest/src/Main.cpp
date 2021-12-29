@@ -125,54 +125,66 @@ int main(void)
         Renderer renderer;
 
         //Test rendering leafs
-        std::vector<float>* leafPositions = new std::vector<float>{
+        /*std::vector<float>* leafPositions = new std::vector<float>{
              0.0f, 0.0f, 1.0f,
              1.0f, 0.0f, 1.0f
 
-        };
+        };*/
 
-        unsigned int instanceVBO;
-        glGenBuffers(1, &instanceVBO);
-        glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * theForest.leafPositions->size(), theForest.leafPositions->data(), GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        
+        //Test with own classes
+        //TODO: REMOVE THIS FROM MAIN INTO A FUNCTION
+        int numberOfInstances = theForest.leafMatrixRow1->size();
+
+        VertexBuffer instanceVBrow1(static_cast<void*>(theForest.leafMatrixRow1->data()),
+            numberOfInstances * 4 * sizeof(float));
+        VertexBuffer instanceVBrow2(static_cast<void*>(theForest.leafMatrixRow2->data()),
+            numberOfInstances * 4 * sizeof(float));
+        VertexBuffer instanceVBrow3(static_cast<void*>(theForest.leafMatrixRow3->data()),
+            numberOfInstances * 4 * sizeof(float));
+        VertexBuffer instanceVBrow4(static_cast<void*>(theForest.leafMatrixRow4->data()),
+            numberOfInstances * 4 * sizeof(float));
 
         std::vector<float>* leafVertices = new std::vector<float>{
             -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
              0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
              0.0f, 0.25f,  0.0f, 0.0f, 1.0f
         };
-
-        //Test with own classes
-        std::unique_ptr<VertexArray> leafVAO;
-        leafVAO = std::make_unique<VertexArray>();
+        
+        std::unique_ptr<VertexArray> leafVAO = std::make_unique<VertexArray>();
         VertexBuffer leafVB(static_cast<void*>(leafVertices->data()), leafVertices->size() * sizeof(float));
 
         VertexBufferLayout layoutLeaf;
         layoutLeaf.Push<float>(3);
         layoutLeaf.Push<float>(2);
 
-        leafVAO->AddBuffer(leafVB, layoutLeaf);
-
-        //unsigned int quadVAO, quadVBO;
-        unsigned int quadVBO;
-        //glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-        //glBindVertexArray(quadVAO);
+        leafVAO->AddBuffer(leafVB, layoutLeaf); //Sets vertexAttribs
         leafVAO->Bind();
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, leafVertices->size(), leafVertices, GL_STATIC_DRAW);
 
-        /*glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));*/
         // also set instance data
         glEnableVertexAttribArray(2);
-        glBindBuffer(GL_ARRAY_BUFFER, instanceVBO); // this attribute comes from a different vertex buffer
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        instanceVBrow1.Bind(); // this attribute comes from a different vertex buffer
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        instanceVBrow1.UnBind();
         glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
+
+        glEnableVertexAttribArray(3);
+        instanceVBrow2.Bind(); // this attribute comes from a different vertex buffer
+        glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        instanceVBrow2.UnBind();
+        glVertexAttribDivisor(3, 1); // tell OpenGL this is an instanced vertex attribute.
+
+        glEnableVertexAttribArray(4);
+        instanceVBrow3.Bind(); // this attribute comes from a different vertex buffer
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        instanceVBrow3.UnBind();
+        glVertexAttribDivisor(4, 1); // tell OpenGL this is an instanced vertex attribute.
+
+        glEnableVertexAttribArray(5);
+        instanceVBrow4.Bind(); // this attribute comes from a different vertex buffer
+        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        instanceVBrow4.UnBind();
+        glVertexAttribDivisor(5, 1); // tell OpenGL this is an instanced vertex attribute.
 
         Shader shaderLeaf("res/shaders/leaf.vert", "res/shaders/leaf.frag");
         shaderLeaf.Bind();
@@ -186,7 +198,7 @@ int main(void)
             renderer.Clear();
 
             textureGrass.Bind();
-
+            //shader.SetUniform1i("tex", 0);
             shader.Bind();
 
             ////renderer.DrawModel(*ground, shader);
@@ -194,11 +206,10 @@ int main(void)
             ////renderer.Draw(*ground->m_VAO, *ground->m_IndexBuffer, shader);
             shaderLeaf.Bind();
 
-            //glBindVertexArray(quadVAO);
-            renderer.Clear();
+            //renderer.Clear();
 
             leafVAO->Bind();
-            glDrawArraysInstanced(GL_TRIANGLES, 0, 3, theForest.leafPositions->size());
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 3, numberOfInstances);
 
             textureBark.Bind();
             shader.Bind();

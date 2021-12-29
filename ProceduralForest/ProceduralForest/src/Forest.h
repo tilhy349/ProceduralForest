@@ -15,7 +15,10 @@ public:
 
 	void Render();
 
-	std::vector<vec3>* leafPositions;
+	std::vector<vec4>* leafMatrixRow1; 
+	std::vector<vec4>* leafMatrixRow2;
+	std::vector<vec4>* leafMatrixRow3;
+	std::vector<vec4>* leafMatrixRow4;
 
 private:
 	void AddTree(glm::vec3 pos, float height, float maxDepth, float maxBranches);

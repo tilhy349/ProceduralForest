@@ -3,16 +3,20 @@
 
 Forest::Forest(unsigned int program)
 {
-    leafPositions = new std::vector<vec3>();
+    leafMatrixRow1 = new std::vector<vec4>();
+    leafMatrixRow2 = new std::vector<vec4>();
+    leafMatrixRow3 = new std::vector<vec4>();
+    leafMatrixRow4 = new std::vector<vec4>();
+
     gluggSetPositionName("inPosition");
     gluggSetNormalName("inNormal");
     gluggSetTexCoordName("inTexCoord");
 
     gluggBegin(GLUGG_TRIANGLES);
 
-    AddTree(glm::vec3(0, 0, 0), 2.0, 1, 3);
-    //AddTree(glm::vec3(2, 0, 0), 2.0, 1, 3);
-    //AddTree(glm::vec3(-2, 0, 0), 2.0, 1, 3);
+    AddTree(glm::vec3(0, 0, 0), 2.0, 1, 2);
+    AddTree(glm::vec3(2, 0, 0), 1.5, 2, 3);
+    AddTree(glm::vec3(-2, 0, 0), 3.0, 3, 3);
     //AddTree(glm::vec3(1, 0, 2), 2.0, 1, 3);
 
     m_RendererID = gluggEnd(&verticeCount, program, 0);
@@ -46,6 +50,8 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
         if (currentDepth < maxDepth) {
             gluggPushMatrix();
             gluggTranslate(0, currentHeight, 0);
+
+          
             gluggScale(0.5, 0.5, 0.5);
             gluggRotate(i * 3.14 / branches, 0.0, 1.0, 0.0);
 
@@ -60,15 +66,16 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
             //Create a leaf position
             gluggPushMatrix();
             gluggTranslate(0, currentHeight, 0);
+            //gluggScale(2 * maxDepth, 2 * maxDepth, 2 * maxDepth); //TODO: Remove scaling from current matrix
             mat4 currentMatrix = gluggCurrentMatrix();
-            //vec3 pos = currentMatrix[3];
-            //printMat4(currentMatrix);
-            vec3 translation = vec3{ currentMatrix.m[3], currentMatrix.m[7], currentMatrix.m[11] };
-            mat3 rotation = mat4tomat3(currentMatrix);
 
-            vec3 pos = rotation * translation;
-            printVec3(pos);
-            leafPositions->push_back(pos);
+            //printMat4(currentMatrix);
+
+            //The currentMatrix is stored columnwise in 4 vectors
+            leafMatrixRow1->push_back(vec4{ currentMatrix.m[0], currentMatrix.m[4], currentMatrix.m[8], currentMatrix.m[12] });
+            leafMatrixRow2->push_back(vec4{ currentMatrix.m[1], currentMatrix.m[5], currentMatrix.m[9], currentMatrix.m[13] });
+            leafMatrixRow3->push_back(vec4{ currentMatrix.m[2], currentMatrix.m[6], currentMatrix.m[10], currentMatrix.m[14] });
+            leafMatrixRow4->push_back(vec4{ currentMatrix.m[3], currentMatrix.m[7], currentMatrix.m[11], currentMatrix.m[15] });
             gluggPopMatrix();
             break;
         }
@@ -78,6 +85,8 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
 
     gluggPopMatrix();
 }
+
+
 
 void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bottomwidth)
 {
