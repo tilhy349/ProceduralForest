@@ -5,10 +5,13 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 
+#include "VertexBufferLayout.h"
+#include "VertexArray.h"
+#include "IndexBuffer.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "Texture.h"
-#include "Geometry.h"
+//#include "Geometry.h"
 #include "Forest.h"
 
 #include <iostream>
@@ -16,6 +19,15 @@
 
 const unsigned int width = 800;
 const unsigned int height = 800;
+
+glm::mat4 view;
+
+//struct Window {
+//    GLFWwindow* window;
+//
+//    glm::mat4 projectionMatrix;
+//    glm::mat4 viewMatrix;
+//};
 
 GLFWwindow* init() {
     GLFWwindow* window;
@@ -45,6 +57,7 @@ GLFWwindow* init() {
         return nullptr;
     }
 
+    //glfwSetWindowUserPointer()
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
@@ -54,6 +67,37 @@ GLFWwindow* init() {
         std::cout << "Error with glew \n";
 
     return window;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    glm::vec3 origin = glm::vec3(0.f, -1.5f, -8.0f);
+
+    glm::vec3 right = glm::vec3(-0.5f, 0.0f, 0.0f);
+    glm::vec3 left = glm::vec3(0.5f, 0.0f, 0.0f);
+    glm::vec3 forward = glm::vec3(0.0f, 0.0f, 0.5f);
+    glm::vec3 backward = glm::vec3(0.0f, 0.0f, -0.5f);
+
+    //glm::vec3 position(view[3][0], view[3][1], view[3][2]);
+
+    if (action == GLFW_REPEAT || action == GLFW_PRESS) {
+        switch (key) {
+        case GLFW_KEY_W:
+            view = glm::translate(view, forward);
+            break;
+        case GLFW_KEY_A:
+            view = glm::translate(view, left);
+            break;
+        case GLFW_KEY_S:
+            view = glm::translate(view, backward);
+            break;
+        case GLFW_KEY_D:
+            view = glm::translate(view, right);
+            break;
+        }
+    }
+
+    
 }
 
 int main(void)
@@ -69,12 +113,15 @@ int main(void)
         glEnable(GL_BLEND); //Transparency
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+        float widthOfTerrain = 40.0f;
+        float depthOfTerrain = 40.0f;
+
         //FLOOR QUAD
         std::vector<float>* vertices = new std::vector<float>{
-        -20.0f, 0.0f, -20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
-         20.0f, 0.0f, -20.0f, 0.0f, 1.0f, 0.0f, 10.0f, 10.0f,
-         20.0f, 0.0f,  20.0f, 0.0f, 1.0f, 0.0f, 10.0f, 0.0f,
-        -20.0f, 0.0f,  20.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f
+        -widthOfTerrain / 2, 0.0f, -depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
+         widthOfTerrain / 2, 0.0f, -depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 10.0f, 10.0f,
+         widthOfTerrain / 2, 0.0f,  depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 10.0f, 0.0f,
+        -widthOfTerrain / 2, 0.0f,  depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f
         };
 
         std::vector<unsigned int>* indices = new std::vector<unsigned int>{
@@ -104,7 +151,7 @@ int main(void)
         //Projection, view and model matrices
         glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 1000.0f);
 
-        glm::mat4 view = view = glm::translate(glm::mat4(1.0f), glm::vec3(0, -1.5, -8.0)); //View matrix;
+        view = glm::translate(glm::mat4(1.0f), glm::vec3(0, -1.5, -8.0)); //View matrix;
         glm::mat4 model = glm::mat4(1.0f);
 
         //Shader shader("res/shaders/Basic.vert", "res/shaders/Basic.frag");
@@ -120,7 +167,7 @@ int main(void)
         Texture textureLeaf("res/textures/leaf2.png");
         textureBark.Bind();
 
-        Forest theForest = Forest(shader.GetRendererID());
+        Forest theForest = Forest(shader.GetRendererID(), widthOfTerrain, depthOfTerrain);
         //std::cout << "number of leaves " << theForest.leafPositions.size();
 
         Renderer renderer;
@@ -191,6 +238,10 @@ int main(void)
 
         double time = 0;
 
+        //SETUP KEY MANAGEMENT
+
+        glfwSetKeyCallback(window, key_callback);        
+
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
@@ -203,11 +254,12 @@ int main(void)
             textureGrass.Bind();
 
             shader.Bind();
+            shader.SetUniformMat4f("modelviewMatrix", view * model);
 
             //renderer.DrawModel(*ground, shader);
             renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
             //renderer.Draw(*ground->m_VAO, *ground->m_IndexBuffer, shader);
-            
+            //ground.Render(shader);
 
             //renderer.Clear();
 
@@ -222,6 +274,7 @@ int main(void)
 
             textureLeaf.Bind();
             shaderLeaf.Bind();
+            shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
             leafVAO->Bind();
             glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances);
 

@@ -1,7 +1,9 @@
 #include "Geometry.h"
 
-Geometry::Geometry(std::vector<float>& vertices, std::vector<unsigned int>& indices)
+Geometry::Geometry(std::vector<float>* verts, std::vector<unsigned int>* inds)
 {
+    vertices = *verts;
+    indices = *inds;
 
     m_VAO = new VertexArray();
 
@@ -18,9 +20,9 @@ Geometry::Geometry(std::vector<float>& vertices, std::vector<unsigned int>& indi
 
     //m_VAO->Bind();
     //m_IndexBuffer->Bind();
-    Bind();
+    //Bind();
 
-    glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+    //glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
 }
 
 Geometry::~Geometry()

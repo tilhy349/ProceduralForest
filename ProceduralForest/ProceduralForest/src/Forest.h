@@ -9,9 +9,10 @@ class Forest
 private:
 	unsigned int m_RendererID;
 	int verticeCount;
+	float widthOfTerrain, depthOfTerrain;
 
 public:
-	Forest(unsigned int program);
+	Forest(unsigned int program, float width, float depth);
 	~Forest();
 
 	void Render();

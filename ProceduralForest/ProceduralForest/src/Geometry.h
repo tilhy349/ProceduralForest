@@ -12,9 +12,12 @@ public:
 	VertexArray* m_VAO;
 	IndexBuffer* m_IndexBuffer;
 
+	std::vector<float> vertices;
+	std::vector<unsigned int> indices;
+
 public:
 
-	Geometry(std::vector<float>& vertices, std::vector<unsigned int>& indices);
+	Geometry(std::vector<float>* verts, std::vector<unsigned int>* inds);
 	~Geometry();
 
 	void Bind() const;

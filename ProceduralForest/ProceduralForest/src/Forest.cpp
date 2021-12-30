@@ -1,7 +1,7 @@
 #include "Forest.h"
 #include <iostream>
 
-Forest::Forest(unsigned int program)
+Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{width}, depthOfTerrain{ depth }
 {
     leafMatrixRow1 = new std::vector<vec4>();
     leafMatrixRow2 = new std::vector<vec4>();
@@ -13,6 +13,8 @@ Forest::Forest(unsigned int program)
     gluggSetTexCoordName("inTexCoord");
 
     gluggBegin(GLUGG_TRIANGLES);
+
+    //TODO: Create function which places the randomly generated trees over the terrain
 
     AddTree(glm::vec3(0, 0, 0), 1.5, 5, 4);
     AddTree(glm::vec3(-2, 0, 0), 2.0, 2, 5);
@@ -52,6 +54,7 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
     //currentBottonWidth = currentBottonWidth / 2;
     //currentTopWidth = currentTopWidth / 2;
 
+    //Might want this, maybe not
     //if (currentDepth < maxDepth) {
     //    //Branch 1 has no angle
     //    gluggPushMatrix();
@@ -65,7 +68,7 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
     //    MakeBranches(maxDepth, currentDepth + 1, currentHeight, branches, totalScale * 0.5);
     //}
 
-    branches = random<int>(1, branches);
+    //branches = random<int>(branches - 2, branches);
     
     for (int i = 0; i < branches; ++i) {
         if (currentDepth < maxDepth) {

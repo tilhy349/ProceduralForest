@@ -146,7 +146,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Forest.cpp" />
-    <ClCompile Include="src\Geometry.cpp" />
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MatrixStack.cpp" />
@@ -167,8 +166,8 @@
     <ClCompile Include="src\VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\ErrorHandling.h" />
     <ClInclude Include="src\Forest.h" />
-    <ClInclude Include="src\Geometry.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\MatrixStack.hpp" />
