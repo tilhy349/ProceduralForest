@@ -117,7 +117,7 @@ int main(void)
 
         Texture textureGrass("res/textures/grass.png");
         Texture textureBark("res/textures/bark.png");
-        Texture textureLeaf("res/textures/leaf.png");
+        Texture textureLeaf("res/textures/leaf2.png");
         textureBark.Bind();
 
         Forest theForest = Forest(shader.GetRendererID());
@@ -139,13 +139,13 @@ int main(void)
             numberOfInstances * 4 * sizeof(float));
 
         std::vector<float>* leafVertices = new std::vector<float>{
-            -0.25f,  0.25f,  0.0f, 0.0f, 1.0f,
-            -0.25f, -0.25f,  0.0f, 0.0f, 0.0f,
-             0.25f, -0.25f,  0.0f, 1.0f, 0.0f, 
+            -0.05f,  0.05f,  0.0f, 0.0f, 1.0f,
+            -0.05f, -0.05f,  0.0f, 0.0f, 0.0f,
+             0.05f, -0.05f,  0.0f, 1.0f, 0.0f, 
 
-            -0.25f,  0.25f,  0.0f, 0.0f, 1.0f,
-             0.25f, -0.25f,  0.0f, 1.0f, 0.0f,
-             0.25f,  0.25f,  0.0f, 1.0f, 1.0f
+            -0.05f,  0.05f,  0.0f, 0.0f, 1.0f,
+             0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+             0.05f,  0.05f,  0.0f, 1.0f, 1.0f
         };
         
         std::unique_ptr<VertexArray> leafVAO = std::make_unique<VertexArray>();
@@ -189,9 +189,13 @@ int main(void)
         shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
         shaderLeaf.SetUniform1i("u_Texture", 0);
 
+        double time = 0;
+
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
+            time = glfwGetTime();
+            //std::cout << "TIME: " << time << "\n";
             /* Render here */
             renderer.Clear();
 

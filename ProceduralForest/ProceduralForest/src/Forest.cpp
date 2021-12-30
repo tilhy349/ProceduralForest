@@ -14,9 +14,9 @@ Forest::Forest(unsigned int program)
 
     gluggBegin(GLUGG_TRIANGLES);
 
-    AddTree(glm::vec3(0, 0, 0), 1.5, 5, 2);
-    AddTree(glm::vec3(-2, 0, 0), 2.0, 2, 3);
-    AddTree(glm::vec3(2, 0, 0), 2.2, 6, 2);
+    AddTree(glm::vec3(0, 0, 0), 1.5, 5, 4);
+    AddTree(glm::vec3(-2, 0, 0), 2.0, 2, 5);
+    AddTree(glm::vec3(2, 0, 0), 2.2, 6, 4);
     
     //AddTree(glm::vec3(-2, 0, 0), 3.0, 3, 3);
     //AddTree(glm::vec3(1, 0, 2), 2.0, 1, 3);
@@ -39,41 +39,61 @@ void Forest::AddTree(glm::vec3 pos, float height, float maxDepth, float maxBranc
     gluggPushMatrix();
     gluggTranslate(pos.x, pos.y, pos.z);
 
-    CreateCylinder(20, height, 0.1, 0.15);
+    CreateCylinder(20, height, 0.07, 0.14);
 
-    MakeBranches(maxDepth, 0, height, 0.1, 0.15, maxBranches);
+    MakeBranches(maxDepth, 0, height, maxBranches, 1.0);
     gluggPopMatrix();
 }
 
-void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHeight, float currentBottonWidth, float currentTopWidth, int branches)
+void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHeight, int branches, float totalScale)
 {
     //branches += rand() % (3 + 1 - 0) + 0;
     //currentHeight = currentHeight / 2;
-    currentBottonWidth = currentBottonWidth / 2;
-    currentTopWidth = currentTopWidth / 2;
+    //currentBottonWidth = currentBottonWidth / 2;
+    //currentTopWidth = currentTopWidth / 2;
 
+    //if (currentDepth < maxDepth) {
+    //    //Branch 1 has no angle
+    //    gluggPushMatrix();
+    //    gluggTranslate(0, currentHeight, 0);
+
+    //    gluggScale(0.5, 0.5, 0.5);
+    //    //totalScale *= 0.5;
+
+    //    CreateCylinder(20, currentHeight, 0.07, 0.14);
+
+    //    MakeBranches(maxDepth, currentDepth + 1, currentHeight, branches, totalScale * 0.5);
+    //}
+
+    branches = random<int>(1, branches);
+    
     for (int i = 0; i < branches; ++i) {
         if (currentDepth < maxDepth) {
             gluggPushMatrix();
             gluggTranslate(0, currentHeight, 0);
-          
-            gluggScale(0.5, 0.5, 0.5);
-            gluggRotate(i * 3.14 / branches, 0.0, 1.0, 0.0);
+            
+            //Might want scaling that is not uniform, --> requires vec3 scaling to be sent
+            //Higher currentDepth -> lower scaling (higher scaling value)
+            double randomScale = random<double>(0.4, 0.6);
+            
+            gluggScale(randomScale, randomScale, randomScale);
+            //gluggScale(0.5, 0.5, 0.5);
+            //gluggRotate((double)i * 2 * M_PI / branches, 0.0, 1.0, 0.0);
+            gluggRotate(random<double>(0.0, 2 * M_PI), 0.0, 1.0, 0.0);
 
-            float random = rand() % (7 + 1 - 2) + 2;
-            gluggRotate(3.14 / random, 0.0, 0.0, 1.0);
+            float random_ = rand() % (7 + 1 - 3) + 3;
+            gluggRotate(3.14 / random_, 0.0, 0.0, 1.0);
 
-            CreateCylinder(20, currentHeight, 0.1, 0.15);
+            CreateCylinder(20, currentHeight, 0.07, 0.14);
 
-            MakeBranches(maxDepth, currentDepth + 1, currentHeight, currentBottonWidth, currentTopWidth, branches);
+            MakeBranches(maxDepth, currentDepth + 1, currentHeight, branches, totalScale * randomScale);
         }
         else {
             //Create a leaf position
             gluggPushMatrix();
-            gluggTranslate(0, currentHeight + 0.25, 0);
-            gluggScale(pow(2, maxDepth), pow(2, maxDepth), pow(2, maxDepth));
-            //std::cout << "max depth" << maxDepth << "\n";
-            //gluggScale(10, 10, 10); //TODO: Remove scaling from current matrix
+            gluggTranslate(0, currentHeight + 0.05, 0);
+            //gluggScale(pow(1.5, maxDepth), pow(1.5, maxDepth), pow(1.5, maxDepth));
+            gluggScale(1 / totalScale, 1 / totalScale, 1 / totalScale);
             mat4 currentMatrix = gluggCurrentMatrix();
 
             //printMat4(currentMatrix);
