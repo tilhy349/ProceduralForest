@@ -212,14 +212,12 @@ int main(void)
         glEnable(GL_DEPTH_TEST); //Render things according to depth
         glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND); //Transparency
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);      
 
         //Projection, view and model matrices
         glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 1000.0f);
 
-        view = glm::translate(glm::mat4(1.0f), glm::vec3(0, -1.5, -8.0)); //View matrix;
+        view = glm::translate(glm::mat4(1.0f), glm::vec3(- widthOfTerrain/2, -1.5, -depthOfTerrain / 2)); //View matrix;
         glm::mat4 model = glm::mat4(1.0f);
 
         //Shader shader("res/shaders/Basic.vert", "res/shaders/Basic.frag");
@@ -229,6 +227,12 @@ int main(void)
         shader.SetUniformMat4f("projectionMatrix", proj);
         shader.SetUniformMat4f("modelviewMatrix", view * model);
         shader.SetUniform1i("tex", 0);
+
+        Shader shaderPhong("res/shaders/phong.vert", "res/shaders/phong.frag");
+        shaderPhong.Bind();
+
+        shaderPhong.SetUniformMat4f("projectionMatrix", proj);
+        shaderPhong.SetUniformMat4f("modelviewMatrix", view * model);
 
         Texture textureGrass("res/textures/grass.png");
         Texture textureBark("res/textures/bark.png");
@@ -324,8 +328,8 @@ int main(void)
             //----Render ground-----
             textureGrass.Bind();
 
-            shader.Bind();
-            shader.SetUniformMat4f("modelviewMatrix", view * model);
+            shaderPhong.Bind();
+            shaderPhong.SetUniformMat4f("modelviewMatrix", view * model);
 
             //renderer.DrawModel(*ground, shader);
             //renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
@@ -333,12 +337,13 @@ int main(void)
             //renderer.Clear();
 
             //----Render forest-----
-            theForest.terrain->Render(shader);
+            theForest.terrain->Render(shaderPhong); //Render terrain
 
             textureBark.Bind();
             shader.Bind();
+            shader.SetUniformMat4f("modelviewMatrix", view * model);
 
-            theForest.Render();
+            theForest.Render(); //Render trees
 
             //----Render leaves-----
             glDepthMask(GL_FALSE); //Disable writing into the depth buffer (not really sure why this is needed)
@@ -347,7 +352,7 @@ int main(void)
             shaderLeaf.Bind();
             shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
             leafVAO->Bind();
-            glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances);
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances); //Render leaves
 
             glDepthMask(GL_TRUE); //Enable writing into the depth buffer
 

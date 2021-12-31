@@ -195,6 +195,8 @@
     <None Include="res\shaders\Basic.vert" />
     <None Include="res\shaders\leaf.frag" />
     <None Include="res\shaders\leaf.vert" />
+    <None Include="res\shaders\phong.frag" />
+    <None Include="res\shaders\phong.vert" />
     <None Include="res\shaders\textured.frag" />
     <None Include="res\shaders\textured.vert" />
   </ItemGroup>

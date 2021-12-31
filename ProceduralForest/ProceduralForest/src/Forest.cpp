@@ -19,9 +19,9 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
 
     //TODO: Create function which places the randomly generated trees over the terrain
 
-    AddTree(glm::vec3(0, 0, 0), 1.5, 5, 4);
-    AddTree(glm::vec3(-2, 0, 0), 2.0, 2, 5);
-    AddTree(glm::vec3(2, 0, 0), 2.2, 6, 4);
+    AddTree(glm::vec3(widthOfTerrain/2, 0, depthOfTerrain / 4), 1.5, 5, 4);
+    AddTree(glm::vec3(widthOfTerrain / 2 - 2, 0, depthOfTerrain / 4), 2.0, 4, 5);
+    AddTree(glm::vec3(widthOfTerrain / 2 + 2, 0, depthOfTerrain / 4), 2.2, 6, 4);
     
     //AddTree(glm::vec3(-2, 0, 0), 3.0, 3, 3);
     //AddTree(glm::vec3(1, 0, 2), 2.0, 1, 3);
@@ -91,7 +91,7 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
             float random_ = rand() % (7 + 1 - 3) + 3;
             gluggRotate(3.14 / random_, 0.0, 0.0, 1.0);
 
-            CreateCylinder(20, currentHeight, 0.07, 0.14);
+            CreateCylinder(20 / (currentDepth + 1), currentHeight, 0.07, 0.14);
 
             MakeBranches(maxDepth, currentDepth + 1, currentHeight, branches, totalScale * randomScale);
         }
@@ -165,7 +165,7 @@ void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bot
 
 void Forest::GenerateTerrain()
 {
-    std::vector<float>* terrainVertices = new std::vector<float>{
+    /*std::vector<float>* terrainVertices = new std::vector<float>{
     -widthOfTerrain / 2, 0.0f, -depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
      widthOfTerrain / 2, 0.0f, -depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 10.0f, 10.0f,
      widthOfTerrain / 2, 0.0f,  depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 10.0f, 0.0f,
@@ -175,20 +175,46 @@ void Forest::GenerateTerrain()
     std::vector<unsigned int>* terrainIndices = new std::vector<unsigned int>{
        0, 3, 2,
        0, 2, 1
-    };
+    };*/
+
+    //Voronoi noise
+    //Divide terrain into cells
+    //Generate a random position (center) in each cell
+    //Calculate distance from center to cell edge
+
+    std::vector<float>* terrainVertices = new std::vector<float>();
+    std::vector<unsigned int>* terrainIndices = new std::vector<unsigned int>();
+
+    for (float x = 0; x < widthOfTerrain; ++x) {
+        for (float z = 0; z < depthOfTerrain; ++z) {
+
+            //Positions
+            terrainVertices->push_back(x);
+            terrainVertices->push_back(sin(x * z)); //This value will change later
+            terrainVertices->push_back(z);
+
+            //Normals (not really correct but works for now)
+            terrainVertices->push_back(0.0f);
+            terrainVertices->push_back(1.0f);
+            terrainVertices->push_back(0.0f);
+
+            //Texture coordinates
+            terrainVertices->push_back(x);
+            terrainVertices->push_back(z);
+        }
+    }
+
+    for (float x = 0; x < widthOfTerrain; ++x) {
+        for (float z = 0; z < depthOfTerrain; ++z) {
+            // Indices
+            terrainIndices->push_back(x + z * widthOfTerrain);
+            terrainIndices->push_back(x + 1 + z * widthOfTerrain);
+            terrainIndices->push_back(x + (z + 1) * widthOfTerrain);
+            terrainIndices->push_back(x + 1 + z * widthOfTerrain);
+            terrainIndices->push_back(x + 1 + (z + 1) * widthOfTerrain);
+            terrainIndices->push_back(x + (z + 1) * widthOfTerrain);
+        }
+    }
 
     terrain = std::make_unique<Geometry>(terrainVertices, terrainIndices);
-
-    /*terrainVAO = std::make_unique<VertexArray>();
-
-    terrainVB = std::make_unique<VertexBuffer>(static_cast<void*>(terrainVertices->data()), terrainVertices->size() * sizeof(float));
-
-    VertexBufferLayout layout;
-    layout.Push<float>(3);
-    layout.Push<float>(3);
-    layout.Push<float>(2);
-
-    terrainVAO->AddBuffer(*terrainVB, layout);
-
-    terrainIndexBuffer = std::make_unique<IndexBuffer>(static_cast<unsigned int*>(terrainIndices->data()), terrainIndices->size());*/
 }
