@@ -5,13 +5,9 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 
-#include "VertexBufferLayout.h"
-#include "VertexArray.h"
-#include "IndexBuffer.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "Texture.h"
-//#include "Geometry.h"
 #include "Forest.h"
 
 #include <iostream>
@@ -20,7 +16,20 @@
 const unsigned int width = 800;
 const unsigned int height = 800;
 
+const float widthOfTerrain = 40.0f;
+const float depthOfTerrain = 40.0f;
+
 glm::mat4 view;
+
+// camera
+glm::vec3 cameraPos = glm::vec3(0.f, -1.5f, -8.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+double lastMousePosX, lastMousePosY;
+bool firstMouse = true;
+float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+float pitch = 0.0f;
 
 //struct Window {
 //    GLFWwindow* window;
@@ -78,6 +87,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     glm::vec3 forward = glm::vec3(0.0f, 0.0f, 0.5f);
     glm::vec3 backward = glm::vec3(0.0f, 0.0f, -0.5f);
 
+    float speed = 3.0f;
+    float mouseSpeed = 0.005f;
+
+    double currMousePosX, currMousePosY;
+
     //glm::vec3 position(view[3][0], view[3][1], view[3][2]);
 
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
@@ -95,9 +109,96 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             view = glm::translate(view, right);
             break;
         }
+        
+    }   
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    //if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    //{
+        //double xpos, ypos;
+        //glfwGetCursorPos(window, &xpos, &ypos);
+
+        //if (firstMouse)
+        //{
+        //    lastMousePosX = xpos;
+        //    lastMousePosY = ypos;
+        //    firstMouse = false;
+        //}
+
+        //glm::vec3 position(view[3][0], view[3][1], view[3][2]);
+
+        //float xoffset = xpos - lastMousePosX;
+        //float yoffset = lastMousePosY - ypos; // reversed since y-coordinates go from bottom to top
+        //lastMousePosX = xpos;
+        //lastMousePosX = ypos;
+
+        //float sensitivity = 0.1f; // change this value to your liking
+        //xoffset *= sensitivity;
+        //yoffset *= sensitivity;
+
+        //yaw += xoffset;
+        //pitch += yoffset;
+
+        //// make sure that when pitch is out of bounds, screen doesn't get flipped
+        //if (pitch > 89.0f)
+        //    pitch = 89.0f;
+        //if (pitch < -89.0f)
+        //    pitch = -89.0f;
+
+        //glm::vec3 front;
+        //front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        //front.y = sin(glm::radians(pitch));
+        //front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        ////cameraFront = glm::normalize(front);
+        //cameraFront = front / glm::length(front);
+
+        //view = glm::lookAt(position, position + cameraFront, cameraUp);
+    //}
+}
+
+static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    //view = glm::rotate(view, )
+    //double xpos, ypos;
+    //glfwGetCursorPos(window, &xpos, &ypos);
+
+    if (firstMouse)
+    {
+        lastMousePosX = xpos;
+        lastMousePosY = ypos;
+        firstMouse = false;
     }
 
-    
+    glm::vec3 position(view[3][0], view[3][1], view[3][2]);
+
+    float xoffset = xpos - lastMousePosX;
+    float yoffset = lastMousePosY - ypos; // reversed since y-coordinates go from bottom to top
+    lastMousePosX = xpos;
+    lastMousePosX = ypos;
+
+    float sensitivity = 0.00001f; // change this value to your liking
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    // make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    //cameraFront = glm::normalize(front);
+    cameraFront = front; /// glm::length(front);
+
+    view = glm::lookAt(position, position + cameraFront, cameraUp);
 }
 
 int main(void)
@@ -113,40 +214,7 @@ int main(void)
         glEnable(GL_BLEND); //Transparency
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        float widthOfTerrain = 40.0f;
-        float depthOfTerrain = 40.0f;
-
-        //FLOOR QUAD
-        std::vector<float>* vertices = new std::vector<float>{
-        -widthOfTerrain / 2, 0.0f, -depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
-         widthOfTerrain / 2, 0.0f, -depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 10.0f, 10.0f,
-         widthOfTerrain / 2, 0.0f,  depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 10.0f, 0.0f,
-        -widthOfTerrain / 2, 0.0f,  depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f
-        };
-
-        std::vector<unsigned int>* indices = new std::vector<unsigned int>{
-           0, 3, 2,
-           0, 2, 1
-        };
-
-        std::unique_ptr<VertexArray> m_VAO;
-        std::unique_ptr<IndexBuffer> m_IndexBuffer;
-
-        m_VAO = std::make_unique<VertexArray>();
-
-        VertexBuffer vb(static_cast<void*>(vertices->data()), vertices->size() * sizeof(float));
-
-        VertexBufferLayout layout;
-        layout.Push<float>(3);
-        layout.Push<float>(3);
-        layout.Push<float>(2);
-
-        m_VAO->AddBuffer(vb, layout);
-
-        m_IndexBuffer = std::make_unique<IndexBuffer>(static_cast<unsigned int*>(indices->data()), indices->size());
-
-        //std::unique_ptr<Geometry> ground = std::make_unique<Geometry>(vertices, indices); 
-        //Geometry ground(vertices, indices);
+        
 
         //Projection, view and model matrices
         glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 1000.0f);
@@ -167,7 +235,7 @@ int main(void)
         Texture textureLeaf("res/textures/leaf2.png");
         textureBark.Bind();
 
-        Forest theForest = Forest(shader.GetRendererID(), widthOfTerrain, depthOfTerrain);
+        Forest theForest(shader.GetRendererID(), widthOfTerrain, depthOfTerrain);
         //std::cout << "number of leaves " << theForest.leafPositions.size();
 
         Renderer renderer;
@@ -238,9 +306,12 @@ int main(void)
 
         double time = 0;
 
-        //SETUP KEY MANAGEMENT
+        //SETUP KEY MANAGEMENT & CURSOR MANAGEMENT
 
-        glfwSetKeyCallback(window, key_callback);        
+        glfwSetKeyCallback(window, key_callback);
+        //glfwSetMouseButtonCallback(window, mouse_button_callback);
+        //glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
+        //glfwSetCursorPosCallback(window, cursor_position_callback);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
@@ -257,13 +328,13 @@ int main(void)
             shader.SetUniformMat4f("modelviewMatrix", view * model);
 
             //renderer.DrawModel(*ground, shader);
-            renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
-            //renderer.Draw(*ground->m_VAO, *ground->m_IndexBuffer, shader);
-            //ground.Render(shader);
+            //renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
 
             //renderer.Clear();
 
             //----Render forest-----
+            theForest.terrain->Render(shader);
+
             textureBark.Bind();
             shader.Bind();
 

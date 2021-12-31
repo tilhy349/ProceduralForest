@@ -3,6 +3,9 @@
 
 Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{width}, depthOfTerrain{ depth }
 {
+
+    GenerateTerrain();
+
     leafMatrixRow1 = new std::vector<vec4>();
     leafMatrixRow2 = new std::vector<vec4>();
     leafMatrixRow3 = new std::vector<vec4>();
@@ -28,6 +31,7 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
 
 Forest::~Forest()
 {
+
 }
 
 void Forest::Render()
@@ -114,8 +118,6 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
     gluggPopMatrix();
 }
 
-
-
 void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bottomwidth)
 {
     gluggMode(GLUGG_TRIANGLE_STRIP);
@@ -159,4 +161,34 @@ void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bot
         vec3 p = SetVector(topwidth * cos(a), height, topwidth * sin(a));
         gluggVertexv(p);
     }
+}
+
+void Forest::GenerateTerrain()
+{
+    std::vector<float>* terrainVertices = new std::vector<float>{
+    -widthOfTerrain / 2, 0.0f, -depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
+     widthOfTerrain / 2, 0.0f, -depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 10.0f, 10.0f,
+     widthOfTerrain / 2, 0.0f,  depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 10.0f, 0.0f,
+    -widthOfTerrain / 2, 0.0f,  depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f
+    };
+
+    std::vector<unsigned int>* terrainIndices = new std::vector<unsigned int>{
+       0, 3, 2,
+       0, 2, 1
+    };
+
+    terrain = std::make_unique<Geometry>(terrainVertices, terrainIndices);
+
+    /*terrainVAO = std::make_unique<VertexArray>();
+
+    terrainVB = std::make_unique<VertexBuffer>(static_cast<void*>(terrainVertices->data()), terrainVertices->size() * sizeof(float));
+
+    VertexBufferLayout layout;
+    layout.Push<float>(3);
+    layout.Push<float>(3);
+    layout.Push<float>(2);
+
+    terrainVAO->AddBuffer(*terrainVB, layout);
+
+    terrainIndexBuffer = std::make_unique<IndexBuffer>(static_cast<unsigned int*>(terrainIndices->data()), terrainIndices->size());*/
 }

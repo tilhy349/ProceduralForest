@@ -8,9 +8,11 @@
 
 class Geometry {
 
-public:
-	VertexArray* m_VAO;
-	IndexBuffer* m_IndexBuffer;
+private:
+
+	std::unique_ptr<VertexArray> m_VAO;
+	std::unique_ptr<IndexBuffer> m_IndexBuffer;
+	std::unique_ptr<VertexBuffer> m_VB;
 
 	std::vector<float> vertices;
 	std::vector<unsigned int> indices;

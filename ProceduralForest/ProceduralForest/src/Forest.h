@@ -1,8 +1,12 @@
 #pragma once
 #include "vendor/glugg/glugg.h"
+//#include "vendor/noise/noise1234.h"
 #include <random>
 #include <glm.hpp>
 #include <vector>
+#include <memory>
+
+#include "Geometry.h"
 
 class Forest
 {
@@ -17,6 +21,8 @@ public:
 
 	void Render();
 
+	std::unique_ptr<Geometry> terrain;
+
 	std::vector<vec4>* leafMatrixRow1; 
 	std::vector<vec4>* leafMatrixRow2;
 	std::vector<vec4>* leafMatrixRow3;
@@ -26,6 +32,7 @@ private:
 	void AddTree(glm::vec3 pos, float height, float maxDepth, float maxBranches);
 	void MakeBranches(const int maxDepth, int currentDepth, float currentHeight, int branches, float totalScale);
 	void CreateCylinder(int aSlices, float height, float topwidth, float bottomwidth);
+	void GenerateTerrain();
 };
 
 //Random generator of doubles, ints, floats
