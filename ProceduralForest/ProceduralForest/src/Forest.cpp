@@ -19,9 +19,30 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
 
     //TODO: Create function which places the randomly generated trees over the terrain
 
-    AddTree(glm::vec3(widthOfTerrain/2, 0, depthOfTerrain / 4), 1.5, 5, 4);
-    AddTree(glm::vec3(widthOfTerrain / 2 - 2, 0, depthOfTerrain / 4), 2.0, 4, 5);
-    AddTree(glm::vec3(widthOfTerrain / 2 + 2, 0, depthOfTerrain / 4), 2.2, 6, 4);
+    const float widthOfPatch = widthOfTerrain / 10;
+    const float depthOfPatch = depthOfTerrain / 10;
+
+    //Divide terrain into rectangular patches, generate a random position in that patch. Spawn random tree
+    for (float i = 0; i < widthOfTerrain; i += widthOfPatch) {
+        for (float j = 0; j < depthOfTerrain; j += depthOfPatch) {
+            float xPos = random<float>(i, i + widthOfPatch);
+            float zPos = random<float>(j, j + depthOfPatch);
+
+            AddTree(glm::vec3(xPos, 0.0f, zPos), 1.5, random<int>(3, 6), 3);
+            //std::cout << "Spawning a tree at pos: (" << xPos << ", " << "0.0f, " << zPos << ")\n";
+        }
+    }
+
+    //glm::vec3 pos(widthOfTerrain / 2, 0, depthOfTerrain / 4);
+    //pos = glm::vec3(widthOfTerrain / 2 - 2, 0, depthOfTerrain / 4);
+    float y = noise2(widthOfTerrain / 2 + 0.23, depthOfTerrain / 4 + 0.22);
+
+    //AddTree(glm::vec3(widthOfTerrain/2, y * 2, depthOfTerrain / 4), 1.5, 5, 4);
+    //AddTree(glm::vec3(widthOfTerrain / 2 - 2, 0, depthOfTerrain / 4), 2.0, 4, 5);
+    //AddTree(glm::vec3(widthOfTerrain / 2 + 2, 0, depthOfTerrain / 4), 2.2, 6, 4);
+
+    //int numberOfTrees = 10;
+    //for(int i = 0; i < )
     
     //AddTree(glm::vec3(-2, 0, 0), 3.0, 3, 3);
     //AddTree(glm::vec3(1, 0, 2), 2.0, 1, 3);
@@ -53,26 +74,6 @@ void Forest::AddTree(glm::vec3 pos, float height, float maxDepth, float maxBranc
 
 void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHeight, int branches, float totalScale)
 {
-    //branches += rand() % (3 + 1 - 0) + 0;
-    //currentHeight = currentHeight / 2;
-    //currentBottonWidth = currentBottonWidth / 2;
-    //currentTopWidth = currentTopWidth / 2;
-
-    //Might want this, maybe not
-    //if (currentDepth < maxDepth) {
-    //    //Branch 1 has no angle
-    //    gluggPushMatrix();
-    //    gluggTranslate(0, currentHeight, 0);
-
-    //    gluggScale(0.5, 0.5, 0.5);
-    //    //totalScale *= 0.5;
-
-    //    CreateCylinder(20, currentHeight, 0.07, 0.14);
-
-    //    MakeBranches(maxDepth, currentDepth + 1, currentHeight, branches, totalScale * 0.5);
-    //}
-
-    //branches = random<int>(branches - 2, branches);
     
     for (int i = 0; i < branches; ++i) {
         if (currentDepth < maxDepth) {
@@ -165,17 +166,6 @@ void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bot
 
 void Forest::GenerateTerrain()
 {
-    /*std::vector<float>* terrainVertices = new std::vector<float>{
-    -widthOfTerrain / 2, 0.0f, -depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
-     widthOfTerrain / 2, 0.0f, -depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 10.0f, 10.0f,
-     widthOfTerrain / 2, 0.0f,  depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 10.0f, 0.0f,
-    -widthOfTerrain / 2, 0.0f,  depthOfTerrain / 2, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f
-    };
-
-    std::vector<unsigned int>* terrainIndices = new std::vector<unsigned int>{
-       0, 3, 2,
-       0, 2, 1
-    };*/
 
     //Voronoi noise
     //Divide terrain into cells
@@ -190,13 +180,30 @@ void Forest::GenerateTerrain()
 
             //Positions
             terrainVertices->push_back(x);
-            terrainVertices->push_back(sin(x * z)); //This value will change later
+            float y = noise2(x * 0.4, z * 0.4);
+            
+            //std::cout << "y = " << y << "\n";
+            terrainVertices->push_back(y * 2); //This value will change later
             terrainVertices->push_back(z);
 
             //Normals (not really correct but works for now)
-            terrainVertices->push_back(0.0f);
-            terrainVertices->push_back(1.0f);
-            terrainVertices->push_back(0.0f);
+            //terrainVertices->push_back(0.0f);
+            //terrainVertices->push_back(1.0f);
+            //terrainVertices->push_back(0.0f);
+
+            //Correct normals
+            vec3 p1 = SetVec3(x + 1, noise2((x + 1) * 0.4, (z + 1) * 0.4), z + 1);
+            vec3 p2 = SetVec3(x + 1, noise2((x + 1) * 0.4, (z - 1) * 0.4), z - 1);
+            vec3 p3 = SetVec3(x - 1, noise2((x - 1) * 0.4, (z - 1) * 0.4), z - 1);
+            vec3 p4 = SetVec3(x - 1, noise2((x - 1) * 0.4, (z + 1) * 0.4), z + 1);
+
+            vec3 v1 = VectorSub(p1, p3);
+            vec3 v2 = VectorSub(p2, p4);
+
+            vec3 normal = CrossProduct(v1, v2);
+            terrainVertices->push_back(normal.x);
+            terrainVertices->push_back(normal.y);
+            terrainVertices->push_back(normal.z);
 
             //Texture coordinates
             terrainVertices->push_back(x);

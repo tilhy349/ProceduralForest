@@ -622,7 +622,7 @@ GLuint gluggEnd(int *count, GLuint program, char optimize)
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObjID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices*sizeof(GLuint), gIndices, GL_STATIC_DRAW);
 	}
-
+	//If free is removed, the data in gVertices, gNormals, gTexCoord is saved
 	free(gVertices);
 	free(gNormals);
 	free(gTexCoord);

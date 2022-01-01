@@ -1,6 +1,6 @@
 #pragma once
 #include "vendor/glugg/glugg.h"
-//#include "vendor/noise/noise1234.h"
+#include "vendor/noise/noise1234.h"
 #include <random>
 #include <glm.hpp>
 #include <vector>
