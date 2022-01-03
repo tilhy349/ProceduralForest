@@ -16,8 +16,11 @@
 const unsigned int width = 800;
 const unsigned int height = 800;
 
-const float widthOfTerrain = 40.0f;
-const float depthOfTerrain = 40.0f;
+const float widthOfTerrain = 10.0f;
+const float depthOfTerrain = 10.0f;
+
+enum Seasons { Winter, Spring, Summer, Fall };
+int currentSeason = 0;
 
 glm::mat4 view;
 
@@ -29,7 +32,8 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 glm::vec3 position = glm::vec3(0.0f, 2.0f, 2.0f);
 
-double lastMousePosX, lastMousePosY;
+double lastMousePosX = width / 2;
+double lastMousePosY = height / 2;
 bool firstMouse = true;
 float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
 float pitch = 0.0f;
@@ -83,8 +87,6 @@ GLFWwindow* init() {
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    glm::vec3 origin = glm::vec3(0.f, -1.5f, -8.0f);
-
     glm::vec3 right = glm::vec3(-0.5f, 0.0f, 0.0f);
     glm::vec3 left = glm::vec3(0.5f, 0.0f, 0.0f);
     glm::vec3 forward = glm::vec3(0.0f, 0.0f, 0.5f);
@@ -100,13 +102,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
         switch (key) {
         case GLFW_KEY_W:
-            view = glm::translate(view, forward);
+            view = glm::translate(view, -cameraFront);
             break;
         case GLFW_KEY_A:
             view = glm::translate(view, left);
             break;
         case GLFW_KEY_S:
-            view = glm::translate(view, backward);
+            view = glm::translate(view, cameraFront);
             break;
         case GLFW_KEY_D:
             view = glm::translate(view, right);
@@ -265,6 +267,7 @@ int main(void)
         shaderLeaf.SetUniformMat4f("projectionMatrix", proj);
         //shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
         shaderLeaf.SetUniform1f("time", time);
+        shaderLeaf.SetUniform1i("season", currentSeason);
         shaderLeaf.SetUniform1i("u_Texture", 0);       
 
         //SETUP KEY MANAGEMENT & CURSOR MANAGEMENT
@@ -274,6 +277,7 @@ int main(void)
         //glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
         glfwSetCursorPosCallback(window, cursor_position_callback);
 
+        //float 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
@@ -286,6 +290,7 @@ int main(void)
             textureGrass.Bind();
 
             shaderPhong.Bind();
+            //model = glm::scale(model, glm::vec3(4, 4, 4));
             shaderPhong.SetUniformMat4f("modelviewMatrix", view * model);
 
             //renderer.DrawModel(*ground, shader);
@@ -298,6 +303,7 @@ int main(void)
 
             textureBark.Bind();
             shader.Bind();
+            model = glm::mat4(1.0f);
             shader.SetUniformMat4f("modelviewMatrix", view * model);
 
             theForest.Render(); //Render trees
@@ -307,9 +313,14 @@ int main(void)
 
             textureLeaf.Bind();
             shaderLeaf.Bind();
-            shaderLeaf.SetUniform1f("time", time);
-            //std::cout << "val = " << 0.5 * sin(time * M_PI / 10) + 0.5 << "\n";
-            //std::cout << "degree = " << fmod(time / 10, 3.14);
+            
+            float degree = fmod(time * M_PI / 10, 2 * M_PI);
+            if (degree < M_PI/2 || degree > 3*M_PI/2) {
+                shaderLeaf.SetUniform1f("time", time);
+            }
+            
+            shaderLeaf.SetUniform1i("season", currentSeason);
+            
             shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
             leafVAO->Bind();
             glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances); //Render leaves

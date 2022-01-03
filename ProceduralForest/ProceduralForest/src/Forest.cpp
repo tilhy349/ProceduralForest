@@ -19,8 +19,8 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
 
     //TODO: Create function which places the randomly generated trees over the terrain
 
-    const float widthOfPatch = widthOfTerrain / 5;
-    const float depthOfPatch = depthOfTerrain / 5;
+    const float widthOfPatch = widthOfTerrain / 3;
+    const float depthOfPatch = depthOfTerrain / 3;
 
     //Divide terrain into rectangular patches, generate a random position in that patch. Spawn random tree
     for (float i = 0; i < widthOfTerrain; i += widthOfPatch) {
@@ -33,19 +33,7 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
         }
     }
 
-    //glm::vec3 pos(widthOfTerrain / 2, 0, depthOfTerrain / 4);
-    //pos = glm::vec3(widthOfTerrain / 2 - 2, 0, depthOfTerrain / 4);
     float y = noise2(widthOfTerrain / 2 + 0.23, depthOfTerrain / 4 + 0.22);
-
-    //AddTree(glm::vec3(widthOfTerrain/2, y * 2, depthOfTerrain / 4), 1.5, 5, 4);
-    //AddTree(glm::vec3(widthOfTerrain / 2 - 2, 0, depthOfTerrain / 4), 2.0, 4, 5);
-    //AddTree(glm::vec3(widthOfTerrain / 2 + 2, 0, depthOfTerrain / 4), 2.2, 6, 4);
-
-    //int numberOfTrees = 10;
-    //for(int i = 0; i < )
-    
-    //AddTree(glm::vec3(-2, 0, 0), 3.0, 3, 3);
-    //AddTree(glm::vec3(1, 0, 2), 2.0, 1, 3);
 
     m_RendererID = gluggEnd(&verticeCount, program, 0);
 }
@@ -179,8 +167,13 @@ void Forest::GenerateTerrain()
     float lowBound = 0;
     float highBound = 0;
 
-    for (float x = 0; x < widthOfTerrain; x++) {
-        for (float z = 0; z < depthOfTerrain; z++) {
+    float step = 0.01f; //Tile size in world coords
+    int verticesWidth = widthOfTerrain / step;
+    int verticesDepth = depthOfTerrain / step;
+    
+    //Construct height map using perlin noise
+    for (float x = 0; x < widthOfTerrain; x += step) {
+        for (float z = 0; z < depthOfTerrain; z += step) {
             float amp = 1;
             float freq = 0.9;
             float y = 0;
@@ -204,13 +197,15 @@ void Forest::GenerateTerrain()
         }
     }
 
-    for (float x = 0; x < widthOfTerrain; x++) {
-        for (float z = 0; z < depthOfTerrain; z++) {
+    
+
+    for (float x = 0; x < verticesWidth; x++) {
+        for (float z = 0; z < verticesDepth; z++) {
 
             //Positions
-            terrainVertices->push_back(x);           
-            terrainVertices->push_back(heightMapValues[x * widthOfTerrain + z]); //Normalize this value
-            terrainVertices->push_back(z);
+            terrainVertices->push_back(x * step);           
+            terrainVertices->push_back(heightMapValues[x * verticesWidth + z]); //Normalize this value
+            terrainVertices->push_back(z * step);
 
             //Normals (not really correct but works for now)
             terrainVertices->push_back(0.0f);
@@ -233,15 +228,20 @@ void Forest::GenerateTerrain()
 
             //Texture coordinates
             terrainVertices->push_back(x);
-            terrainVertices->push_back(z);
+            terrainVertices->push_back(z);                      
+        }
+    }
 
-            // Indices
-            terrainIndices->push_back(x + z * widthOfTerrain);
-            terrainIndices->push_back(x + 1 + z * widthOfTerrain);
-            terrainIndices->push_back(x + (z + 1) * widthOfTerrain);
-            terrainIndices->push_back(x + 1 + z * widthOfTerrain);
-            terrainIndices->push_back(x + 1 + (z + 1) * widthOfTerrain);
-            terrainIndices->push_back(x + (z + 1) * widthOfTerrain);
+    //Construct indices
+    for (float x = 0; x < verticesWidth -1; x++) {
+        for (float z = 0; z < verticesDepth -1; z++) {
+            
+            terrainIndices->push_back(x + z * verticesDepth);
+            terrainIndices->push_back(x + 1 + z * verticesDepth);
+            terrainIndices->push_back(x + (z + 1) * verticesDepth);
+            terrainIndices->push_back(x + 1 + z * verticesDepth);
+            terrainIndices->push_back(x + 1 + (z + 1) * verticesDepth);
+            terrainIndices->push_back(x + (z + 1) * verticesDepth);          
         }
     }
 
