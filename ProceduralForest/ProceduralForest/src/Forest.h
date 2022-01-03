@@ -23,10 +23,10 @@ public:
 
 	std::unique_ptr<Geometry> terrain;
 
-	std::vector<vec4>* leafMatrixRow1; 
-	std::vector<vec4>* leafMatrixRow2;
-	std::vector<vec4>* leafMatrixRow3;
-	std::vector<vec4>* leafMatrixRow4;
+	std::vector<vec3>* leafMatrixCol1; 
+	std::vector<vec3>* leafMatrixCol2;
+	std::vector<vec3>* leafMatrixCol3;
+	std::vector<vec3>* leafMatrixCol4;
 
 private:
 	void AddTree(glm::vec3 pos, float height, float maxDepth, float maxBranches);

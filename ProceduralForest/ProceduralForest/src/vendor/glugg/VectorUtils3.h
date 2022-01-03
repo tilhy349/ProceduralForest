@@ -34,7 +34,7 @@
 // These are not changed below yet
 #define dot DotProduct
 #define cross CrossProduct
-#define normalize Normalize
+//#define normalize Normalize
 // Furthermore, SplitVector should be revised to conform with reflect()
 
 

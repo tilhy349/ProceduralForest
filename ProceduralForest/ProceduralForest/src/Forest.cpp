@@ -6,10 +6,10 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
 
     GenerateTerrain();
 
-    leafMatrixRow1 = new std::vector<vec4>();
-    leafMatrixRow2 = new std::vector<vec4>();
-    leafMatrixRow3 = new std::vector<vec4>();
-    leafMatrixRow4 = new std::vector<vec4>();
+    leafMatrixCol1 = new std::vector<vec3>();
+    leafMatrixCol2 = new std::vector<vec3>();
+    leafMatrixCol3 = new std::vector<vec3>();
+    leafMatrixCol4 = new std::vector<vec3>();
 
     gluggSetPositionName("inPosition");
     gluggSetNormalName("inNormal");
@@ -19,8 +19,8 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
 
     //TODO: Create function which places the randomly generated trees over the terrain
 
-    const float widthOfPatch = widthOfTerrain / 10;
-    const float depthOfPatch = depthOfTerrain / 10;
+    const float widthOfPatch = widthOfTerrain / 5;
+    const float depthOfPatch = depthOfTerrain / 5;
 
     //Divide terrain into rectangular patches, generate a random position in that patch. Spawn random tree
     for (float i = 0; i < widthOfTerrain; i += widthOfPatch) {
@@ -107,10 +107,10 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
             //printMat4(currentMatrix);
 
             //The currentMatrix is stored columnwise in 4 vectors
-            leafMatrixRow1->push_back(vec4{ currentMatrix.m[0], currentMatrix.m[4], currentMatrix.m[8], currentMatrix.m[12] });
-            leafMatrixRow2->push_back(vec4{ currentMatrix.m[1], currentMatrix.m[5], currentMatrix.m[9], currentMatrix.m[13] });
-            leafMatrixRow3->push_back(vec4{ currentMatrix.m[2], currentMatrix.m[6], currentMatrix.m[10], currentMatrix.m[14] });
-            leafMatrixRow4->push_back(vec4{ currentMatrix.m[3], currentMatrix.m[7], currentMatrix.m[11], currentMatrix.m[15] });
+            leafMatrixCol1->push_back(vec3{ currentMatrix.m[0], currentMatrix.m[4], currentMatrix.m[8]});
+            leafMatrixCol2->push_back(vec3{ currentMatrix.m[1], currentMatrix.m[5], currentMatrix.m[9]});
+            leafMatrixCol3->push_back(vec3{ currentMatrix.m[2], currentMatrix.m[6], currentMatrix.m[10]});
+            leafMatrixCol4->push_back(vec3{ currentMatrix.m[3], currentMatrix.m[7], currentMatrix.m[11]});
             gluggPopMatrix();
             break;
         }
@@ -175,24 +175,50 @@ void Forest::GenerateTerrain()
     std::vector<float>* terrainVertices = new std::vector<float>();
     std::vector<unsigned int>* terrainIndices = new std::vector<unsigned int>();
 
-    for (float x = 0; x < widthOfTerrain; ++x) {
-        for (float z = 0; z < depthOfTerrain; ++z) {
+    std::vector<float> heightMapValues = std::vector<float>();
+    float lowBound = 0;
+    float highBound = 0;
+
+    for (float x = 0; x < widthOfTerrain; x++) {
+        for (float z = 0; z < depthOfTerrain; z++) {
+            float amp = 1;
+            float freq = 0.9;
+            float y = 0;
+
+            for (int i = 0; i < 5; i++) { //% octaves of noise
+                //Generate height value
+                float perlinValue = noise2(x * freq, z * freq);
+                y += perlinValue * amp;
+                //std::cout << "y = " << y << "\n";
+                amp *= 0.5;
+                freq *= 2;
+            }
+
+            //std::cout << "y = " << y << "\n";
+            heightMapValues.push_back(y);
+
+            if (y < lowBound)
+                lowBound = y;
+            else if (y > highBound)
+                highBound = y;
+        }
+    }
+
+    for (float x = 0; x < widthOfTerrain; x++) {
+        for (float z = 0; z < depthOfTerrain; z++) {
 
             //Positions
-            terrainVertices->push_back(x);
-            float y = noise2(x * 0.4, z * 0.4);
-            
-            //std::cout << "y = " << y << "\n";
-            terrainVertices->push_back(y * 2); //This value will change later
+            terrainVertices->push_back(x);           
+            terrainVertices->push_back(heightMapValues[x * widthOfTerrain + z]); //Normalize this value
             terrainVertices->push_back(z);
 
             //Normals (not really correct but works for now)
-            //terrainVertices->push_back(0.0f);
-            //terrainVertices->push_back(1.0f);
-            //terrainVertices->push_back(0.0f);
+            terrainVertices->push_back(0.0f);
+            terrainVertices->push_back(1.0f);
+            terrainVertices->push_back(0.0f);
 
             //Correct normals
-            vec3 p1 = SetVec3(x + 1, noise2((x + 1) * 0.4, (z + 1) * 0.4), z + 1);
+            /*vec3 p1 = SetVec3(x + 1, noise2((x + 1) * 0.4, (z + 1) * 0.4), z + 1);
             vec3 p2 = SetVec3(x + 1, noise2((x + 1) * 0.4, (z - 1) * 0.4), z - 1);
             vec3 p3 = SetVec3(x - 1, noise2((x - 1) * 0.4, (z - 1) * 0.4), z - 1);
             vec3 p4 = SetVec3(x - 1, noise2((x - 1) * 0.4, (z + 1) * 0.4), z + 1);
@@ -203,16 +229,12 @@ void Forest::GenerateTerrain()
             vec3 normal = CrossProduct(v1, v2);
             terrainVertices->push_back(normal.x);
             terrainVertices->push_back(normal.y);
-            terrainVertices->push_back(normal.z);
+            terrainVertices->push_back(normal.z);*/
 
             //Texture coordinates
             terrainVertices->push_back(x);
             terrainVertices->push_back(z);
-        }
-    }
 
-    for (float x = 0; x < widthOfTerrain; ++x) {
-        for (float z = 0; z < depthOfTerrain; ++z) {
             // Indices
             terrainIndices->push_back(x + z * widthOfTerrain);
             terrainIndices->push_back(x + 1 + z * widthOfTerrain);

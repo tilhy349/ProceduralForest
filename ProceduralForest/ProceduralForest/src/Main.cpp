@@ -22,9 +22,12 @@ const float depthOfTerrain = 40.0f;
 glm::mat4 view;
 
 // camera
-glm::vec3 cameraPos = glm::vec3(0.f, -1.5f, -8.0f);
+glm::vec3 cameraPos = glm::vec3(widthOfTerrain / 2, 1.5f, depthOfTerrain / 2);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraRight = glm::vec3(1.0f, 0.0f, 0.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+glm::vec3 position = glm::vec3(0.0f, 2.0f, 2.0f);
 
 double lastMousePosX, lastMousePosY;
 bool firstMouse = true;
@@ -110,59 +113,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             break;
         }
         
+        //UPDATE CAMERA POSITION
+        //cameraPos = glm::vec3(view[3][0], view[3][1], view[3][2]);
     }   
-}
-
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-    //if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    //{
-        //double xpos, ypos;
-        //glfwGetCursorPos(window, &xpos, &ypos);
-
-        //if (firstMouse)
-        //{
-        //    lastMousePosX = xpos;
-        //    lastMousePosY = ypos;
-        //    firstMouse = false;
-        //}
-
-        //glm::vec3 position(view[3][0], view[3][1], view[3][2]);
-
-        //float xoffset = xpos - lastMousePosX;
-        //float yoffset = lastMousePosY - ypos; // reversed since y-coordinates go from bottom to top
-        //lastMousePosX = xpos;
-        //lastMousePosX = ypos;
-
-        //float sensitivity = 0.1f; // change this value to your liking
-        //xoffset *= sensitivity;
-        //yoffset *= sensitivity;
-
-        //yaw += xoffset;
-        //pitch += yoffset;
-
-        //// make sure that when pitch is out of bounds, screen doesn't get flipped
-        //if (pitch > 89.0f)
-        //    pitch = 89.0f;
-        //if (pitch < -89.0f)
-        //    pitch = -89.0f;
-
-        //glm::vec3 front;
-        //front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        //front.y = sin(glm::radians(pitch));
-        //front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        ////cameraFront = glm::normalize(front);
-        //cameraFront = front / glm::length(front);
-
-        //view = glm::lookAt(position, position + cameraFront, cameraUp);
-    //}
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    //view = glm::rotate(view, )
-    //double xpos, ypos;
-    //glfwGetCursorPos(window, &xpos, &ypos);
 
     if (firstMouse)
     {
@@ -171,14 +128,14 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
         firstMouse = false;
     }
 
-    glm::vec3 position(view[3][0], view[3][1], view[3][2]);
+    //glm::vec3 position(view[3][0], view[3][1], view[3][2]);
 
     float xoffset = xpos - lastMousePosX;
     float yoffset = lastMousePosY - ypos; // reversed since y-coordinates go from bottom to top
     lastMousePosX = xpos;
-    lastMousePosX = ypos;
+    lastMousePosY = ypos;   
 
-    float sensitivity = 0.00001f; // change this value to your liking
+    float sensitivity = 0.05f; // change this value to your liking
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
@@ -195,10 +152,9 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
     front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
     front.y = sin(glm::radians(pitch));
     front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    //cameraFront = glm::normalize(front);
-    cameraFront = front; /// glm::length(front);
+    cameraFront = glm::normalize(front);
 
-    view = glm::lookAt(position, position + cameraFront, cameraUp);
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
 
 int main(void)
@@ -232,7 +188,7 @@ int main(void)
         shaderPhong.Bind();
 
         shaderPhong.SetUniformMat4f("projectionMatrix", proj);
-        shaderPhong.SetUniformMat4f("modelviewMatrix", view * model);
+        //shaderPhong.SetUniformMat4f("modelviewMatrix", view * model);
 
         Texture textureGrass("res/textures/grass.png");
         Texture textureBark("res/textures/bark.png");
@@ -246,16 +202,16 @@ int main(void)
         
         //Test with own classes
         //TODO: REMOVE THIS FROM MAIN INTO A FUNCTION
-        int numberOfInstances = theForest.leafMatrixRow1->size();
+        int numberOfInstances = theForest.leafMatrixCol1->size();
 
-        VertexBuffer instanceVBrow1(static_cast<void*>(theForest.leafMatrixRow1->data()),
-            numberOfInstances * 4 * sizeof(float));
-        VertexBuffer instanceVBrow2(static_cast<void*>(theForest.leafMatrixRow2->data()),
-            numberOfInstances * 4 * sizeof(float));
-        VertexBuffer instanceVBrow3(static_cast<void*>(theForest.leafMatrixRow3->data()),
-            numberOfInstances * 4 * sizeof(float));
-        VertexBuffer instanceVBrow4(static_cast<void*>(theForest.leafMatrixRow4->data()),
-            numberOfInstances * 4 * sizeof(float));
+        VertexBuffer instanceVBrow1(static_cast<void*>(theForest.leafMatrixCol1->data()),
+            numberOfInstances * 3 * sizeof(float));
+        VertexBuffer instanceVBrow2(static_cast<void*>(theForest.leafMatrixCol2->data()),
+            numberOfInstances * 3 * sizeof(float));
+        VertexBuffer instanceVBrow3(static_cast<void*>(theForest.leafMatrixCol3->data()),
+            numberOfInstances * 3 * sizeof(float));
+        VertexBuffer instanceVBrow4(static_cast<void*>(theForest.leafMatrixCol4->data()),
+            numberOfInstances * 3 * sizeof(float));
 
         std::vector<float>* leafVertices = new std::vector<float>{
             -0.05f,  0.05f,  0.0f, 0.0f, 1.0f,
@@ -280,42 +236,43 @@ int main(void)
         // also set instance data
         glEnableVertexAttribArray(2);
         instanceVBrow1.Bind(); // this attribute comes from a different vertex buffer
-        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         instanceVBrow1.UnBind();
         glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
 
         glEnableVertexAttribArray(3);
         instanceVBrow2.Bind(); // this attribute comes from a different vertex buffer
-        glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         instanceVBrow2.UnBind();
         glVertexAttribDivisor(3, 1); // tell OpenGL this is an instanced vertex attribute.
 
         glEnableVertexAttribArray(4);
         instanceVBrow3.Bind(); // this attribute comes from a different vertex buffer
-        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         instanceVBrow3.UnBind();
         glVertexAttribDivisor(4, 1); // tell OpenGL this is an instanced vertex attribute.
 
         glEnableVertexAttribArray(5);
         instanceVBrow4.Bind(); // this attribute comes from a different vertex buffer
-        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         instanceVBrow4.UnBind();
         glVertexAttribDivisor(5, 1); // tell OpenGL this is an instanced vertex attribute.
+
+        double time = 0;
 
         Shader shaderLeaf("res/shaders/leaf.vert", "res/shaders/leaf.frag");
         shaderLeaf.Bind();
         shaderLeaf.SetUniformMat4f("projectionMatrix", proj);
-        shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
-        shaderLeaf.SetUniform1i("u_Texture", 0);
-
-        double time = 0;
+        //shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
+        shaderLeaf.SetUniform1f("time", time);
+        shaderLeaf.SetUniform1i("u_Texture", 0);       
 
         //SETUP KEY MANAGEMENT & CURSOR MANAGEMENT
 
         glfwSetKeyCallback(window, key_callback);
         //glfwSetMouseButtonCallback(window, mouse_button_callback);
         //glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
-        //glfwSetCursorPosCallback(window, cursor_position_callback);
+        glfwSetCursorPosCallback(window, cursor_position_callback);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
@@ -350,6 +307,9 @@ int main(void)
 
             textureLeaf.Bind();
             shaderLeaf.Bind();
+            shaderLeaf.SetUniform1f("time", time);
+            //std::cout << "val = " << 0.5 * sin(time * M_PI / 10) + 0.5 << "\n";
+            //std::cout << "degree = " << fmod(time / 10, 3.14);
             shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
             leafVAO->Bind();
             glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances); //Render leaves
