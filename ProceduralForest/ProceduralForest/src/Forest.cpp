@@ -33,7 +33,7 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
         }
     }
 
-    float y = noise2(widthOfTerrain / 2 + 0.23, depthOfTerrain / 4 + 0.22);
+    float y = noise2(widthOfTerrain / 2 + 0.23f, depthOfTerrain / 4 + 0.22f);
 
     m_RendererID = gluggEnd(&verticeCount, program, 0);
 }
@@ -49,12 +49,12 @@ void Forest::Render()
     glDrawArrays(GL_TRIANGLES, 0, verticeCount);
 }
 
-void Forest::AddTree(glm::vec3 pos, float height, float maxDepth, float maxBranches)
+void Forest::AddTree(glm::vec3 pos, float height, int maxDepth, int maxBranches)
 {
     gluggPushMatrix();
     gluggTranslate(pos.x, pos.y, pos.z);
 
-    CreateCylinder(20, height, 0.07, 0.14);
+    CreateCylinder(20, height, 0.07f, 0.14f);
 
     MakeBranches(maxDepth, 0, height, maxBranches, 1.0);
     gluggPopMatrix();
@@ -70,24 +70,24 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
             
             //Might want scaling that is not uniform, --> requires vec3 scaling to be sent
             //Higher currentDepth -> lower scaling (higher scaling value)
-            double randomScale = random<double>(0.4, 0.6);
+            float randomScale = random<float>(0.4f, 0.6f);
             
             gluggScale(randomScale, randomScale, randomScale);
             //gluggScale(0.5, 0.5, 0.5);
             //gluggRotate((double)i * 2 * M_PI / branches, 0.0, 1.0, 0.0);
-            gluggRotate(random<double>(0.0, 2 * M_PI), 0.0, 1.0, 0.0);
+            gluggRotate(random<float>(0.0f, (float)(2.0f * M_PI)), 0.0, 1.0, 0.0);
 
-            float random_ = rand() % (7 + 1 - 3) + 3;
-            gluggRotate(3.14 / random_, 0.0, 0.0, 1.0);
+            int random_ = rand() % (7 + 1 - 3) + 3;
+            gluggRotate(3.14f / random_, 0.0, 0.0, 1.0);
 
-            CreateCylinder(20 / (currentDepth + 1), currentHeight, 0.07, 0.14);
+            CreateCylinder(20 / (currentDepth + 1), currentHeight, 0.07f, 0.14f);
 
             MakeBranches(maxDepth, currentDepth + 1, currentHeight, branches, totalScale * randomScale);
         }
         else {
             //Create a leaf position
             gluggPushMatrix();
-            gluggTranslate(0, currentHeight + 0.05, 0);
+            gluggTranslate(0, currentHeight + 0.05f, 0);
             //gluggScale(pow(1.5, maxDepth), pow(1.5, maxDepth), pow(1.5, maxDepth));
             gluggScale(1 / totalScale, 1 / totalScale, 1 / totalScale);
             mat4 currentMatrix = gluggCurrentMatrix();
@@ -115,7 +115,7 @@ void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bot
     vec3 bn = SetVector(0, -1, 0); // Bottom normal
     vec3 tn = SetVector(0, 1, 0); // Top normal
 
-    for (float a = 0.0; a < 2.0 * M_PI + 0.0001; a += 2.0 * M_PI / aSlices)
+    for (float a = 0.0; a < 2.0 * M_PI + 0.0001; a += (float)(2.0f * M_PI / aSlices))
     {
         float a1 = a;
 
@@ -125,9 +125,9 @@ void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bot
 
         // Done making points and normals. Now create polygons!
         gluggNormalv(pn);
-        gluggTexCoord(height, a1 / M_PI);
+        gluggTexCoord(height, (float)(a1 / M_PI));
         gluggVertexv(p2);
-        gluggTexCoord(0, a1 / M_PI);
+        gluggTexCoord(0, (float)(a1 / M_PI));
         gluggVertexv(p1);
     }
 
@@ -136,7 +136,7 @@ void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bot
     gluggNormalv(bn);
     gluggVertexv(center);
     // Walk around edge
-    for (float a = 0.0; a <= 2.0 * M_PI + 0.001; a += 2.0 * M_PI / aSlices)
+    for (float a = 0.0; a <= 2.0 * M_PI + 0.001; a += (float)(2.0 * M_PI / aSlices))
     {
         vec3 p = SetVector(bottomwidth * cos(a), 0, bottomwidth * sin(a));
         gluggVertexv(p);
@@ -145,7 +145,7 @@ void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bot
     gluggMode(GLUGG_TRIANGLE_FAN); // Reset to new fan
     gluggNormalv(tn);
     gluggVertexv(top);
-    for (float a = 2.0 * M_PI; a >= -0.001; a -= 2.0 * M_PI / aSlices)
+    for (float a = (float)(2.0f * M_PI); a >= -0.001f; a -= (float)(2.0f * M_PI / aSlices))
     {
         vec3 p = SetVector(topwidth * cos(a), height, topwidth * sin(a));
         gluggVertexv(p);
@@ -168,14 +168,14 @@ void Forest::GenerateTerrain()
     float highBound = 0;
 
     float step = 0.01f; //Tile size in world coords
-    int verticesWidth = widthOfTerrain / step;
-    int verticesDepth = depthOfTerrain / step;
+    int verticesWidth = (int)(widthOfTerrain / step);
+    int verticesDepth = (int)(depthOfTerrain / step);
     
     //Construct height map using perlin noise
     for (float x = 0; x < widthOfTerrain; x += step) {
         for (float z = 0; z < depthOfTerrain; z += step) {
             float amp = 1;
-            float freq = 0.9;
+            float freq = 0.9f;
             float y = 0;
 
             for (int i = 0; i < 5; i++) { //% octaves of noise
@@ -199,8 +199,8 @@ void Forest::GenerateTerrain()
 
     
 
-    for (float x = 0; x < verticesWidth; x++) {
-        for (float z = 0; z < verticesDepth; z++) {
+    for (int x = 0; x < verticesWidth; x++) {
+        for (int z = 0; z < verticesDepth; z++) {
 
             //Positions
             terrainVertices->push_back(x * step);           
@@ -227,14 +227,14 @@ void Forest::GenerateTerrain()
             terrainVertices->push_back(normal.z);*/
 
             //Texture coordinates
-            terrainVertices->push_back(x);
-            terrainVertices->push_back(z);                      
+            terrainVertices->push_back((float)x);
+            terrainVertices->push_back((float)z);
         }
     }
 
     //Construct indices
-    for (float x = 0; x < verticesWidth -1; x++) {
-        for (float z = 0; z < verticesDepth -1; z++) {
+    for (int x = 0; x < verticesWidth -1; x++) {
+        for (int z = 0; z < verticesDepth -1; z++) {
             
             terrainIndices->push_back(x + z * verticesDepth);
             terrainIndices->push_back(x + 1 + z * verticesDepth);
