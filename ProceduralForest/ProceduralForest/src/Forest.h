@@ -15,11 +15,28 @@ private:
 	int verticeCount;
 	float widthOfTerrain, depthOfTerrain;
 
+	//Terrain specifications
+	const float verticalScale = 1.0f; //Vertical scale of height values
+	const int octaves = 5; //Number of octaves for perlin noice
+	const float step = 0.01f; //Tile size in world coords
+
+	float lowBound = 0; //Low-bound for noise values
+	float highBound = 0; //High-bound for noise values
+
+	const int verticesWidth; //Number of vertices along width
+	const int verticesDepth; //Number of vertices along height
+
 public:
 	Forest(unsigned int program, float width, float depth);
 	~Forest();
 
 	void Render();
+	void FreeMatrixData() {
+		delete leafMatrixCol1;
+		delete leafMatrixCol2;
+		delete leafMatrixCol3;
+		delete leafMatrixCol4;
+	}
 
 	std::unique_ptr<Geometry> terrain;
 
@@ -32,7 +49,7 @@ private:
 	void AddTree(glm::vec3 pos, float height, int maxDepth, int maxBranches);
 	void MakeBranches(const int maxDepth, int currentDepth, float currentHeight, int branches, float totalScale);
 	void CreateCylinder(int aSlices, float height, float topwidth, float bottomwidth);
-	void GenerateTerrain();
+	void GenerateTerrain(std::vector<float>& heightMapValues);
 };
 
 //Random generator of doubles, ints, floats

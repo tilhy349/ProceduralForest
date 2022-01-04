@@ -62,8 +62,6 @@ WindowManager::WindowManager(const int windowWidth, const int windowHeight): wid
     proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 1000.0f);
 }
 
-
-
 void WindowManager::ProcessCursorPosition(double xpos, double ypos){
     if (firstMouse)
     {
@@ -98,7 +96,13 @@ void WindowManager::ProcessCursorPosition(double xpos, double ypos){
     front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     cameraFront = glm::normalize(front);
 
-    //Where is lookAt?
+    //Also recalculate right and up vectors
+    //And normalize them
+
+    cameraRight = glm::normalize(glm::cross(cameraFront, glm::vec3(0, 1.0f, 0)));  
+    cameraUp = glm::normalize(glm::cross(cameraRight, cameraFront));
+
+    //Update viewMatrix
     viewMatrix = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
 
@@ -109,25 +113,25 @@ void WindowManager::ProcessKeyEvent(int key, int action) {
     glm::vec3 forward = glm::vec3(0.0f, 0.0f, 0.5f);
     glm::vec3 backward = glm::vec3(0.0f, 0.0f, -0.5f);
 
-    //glm::vec3 position(view[3][0], view[3][1], view[3][2]);
+    float velocity = 0.05f; //Modify this for faster/slower movement
 
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
         switch (key) {
         case GLFW_KEY_W:
-            viewMatrix = glm::translate(viewMatrix, -cameraFront);
+            cameraPos += cameraFront * velocity;
             break;
         case GLFW_KEY_A:
-            viewMatrix = glm::translate(viewMatrix, left);
+            cameraPos += -cameraRight * velocity;
             break;
         case GLFW_KEY_S:
-            viewMatrix = glm::translate(viewMatrix, cameraFront);
+            cameraPos += -cameraFront * velocity;
             break;
         case GLFW_KEY_D:
-            viewMatrix = glm::translate(viewMatrix, right);
+            cameraPos += cameraRight * velocity;
             break;
         }
 
-        //UPDATE CAMERA POSITION/VIEW MATRIX
-        //cameraPos = glm::vec3(view[3][0], view[3][1], view[3][2]);
+        //UPDATE VIEW MATRIX
+        viewMatrix = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     }
 }

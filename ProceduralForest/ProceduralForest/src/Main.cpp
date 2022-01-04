@@ -78,7 +78,9 @@ int main(void)
         VertexBuffer instanceVBrow4(static_cast<void*>(theForest.leafMatrixCol4->data()),
             numberOfInstances * 3 * sizeof(float));
 
-        std::vector<float>* leafVertices = new std::vector<float>{
+        theForest.FreeMatrixData();
+
+        std::vector<float> leafVertices{
             -0.05f,  0.05f,  0.0f, 0.0f, 1.0f,
             -0.05f, -0.05f,  0.0f, 0.0f, 0.0f,
              0.05f, -0.05f,  0.0f, 1.0f, 0.0f, 
@@ -89,7 +91,7 @@ int main(void)
         };
         
         std::unique_ptr<VertexArray> leafVAO = std::make_unique<VertexArray>();
-        VertexBuffer leafVB(static_cast<void*>(leafVertices->data()), leafVertices->size() * sizeof(float));
+        VertexBuffer leafVB(static_cast<void*>(leafVertices.data()), leafVertices.size() * sizeof(float));
 
         VertexBufferLayout layoutLeaf;
         layoutLeaf.Push<float>(3);

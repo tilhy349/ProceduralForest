@@ -1,10 +1,11 @@
 #include "Forest.h"
 #include <iostream>
 
-Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{width}, depthOfTerrain{ depth }
+Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{width}, depthOfTerrain{ depth }, 
+    verticesWidth{ (int)(widthOfTerrain / step) }, verticesDepth{ (int)(depthOfTerrain / step) }
 {
-
-    GenerateTerrain();
+    std::vector<float> heightMapValues = std::vector<float>();
+    GenerateTerrain(heightMapValues);
 
     leafMatrixCol1 = new std::vector<vec3>();
     leafMatrixCol2 = new std::vector<vec3>();
@@ -27,20 +28,26 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
         for (float j = 0; j < depthOfTerrain; j += depthOfPatch) {
             float xPos = random<float>(i, i + widthOfPatch);
             float zPos = random<float>(j, j + depthOfPatch);
+            float yPos = heightMapValues[i * verticesWidth + j * 8 + 2]; //TODO: fix right y-position
 
-            AddTree(glm::vec3(xPos, 0.0f, zPos), 1.5, random<int>(3, 6), 3);
-            //std::cout << "Spawning a tree at pos: (" << xPos << ", " << "0.0f, " << zPos << ")\n";
+            AddTree(glm::vec3(xPos, yPos, zPos), 1.5, random<int>(3, 6), 3); 
+            std::cout << "Spawning a tree at pos: (" << xPos << ", " << yPos << ", " << zPos << ")\n";
         }
     }
-
-    float y = noise2(widthOfTerrain / 2 + 0.23f, depthOfTerrain / 4 + 0.22f);
 
     m_RendererID = gluggEnd(&verticeCount, program, 0);
 }
 
 Forest::~Forest()
 {
-
+    //TODO: Check how this works
+    /*if (leafMatrixCol1 != nullptr) {
+        delete leafMatrixCol1;
+        delete leafMatrixCol2;
+        delete leafMatrixCol3;
+        delete leafMatrixCol4;
+    }*/
+    
 }
 
 void Forest::Render()
@@ -73,8 +80,6 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
             float randomScale = random<float>(0.4f, 0.6f);
             
             gluggScale(randomScale, randomScale, randomScale);
-            //gluggScale(0.5, 0.5, 0.5);
-            //gluggRotate((double)i * 2 * M_PI / branches, 0.0, 1.0, 0.0);
             gluggRotate(random<float>(0.0f, (float)(2.0f * M_PI)), 0.0, 1.0, 0.0);
 
             int random_ = rand() % (7 + 1 - 3) + 3;
@@ -152,25 +157,11 @@ void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bot
     }
 }
 
-void Forest::GenerateTerrain()
+void Forest::GenerateTerrain(std::vector<float>& heightMapValues)
 {
-
-    //Voronoi noise
-    //Divide terrain into cells
-    //Generate a random position (center) in each cell
-    //Calculate distance from center to cell edge
-
     std::vector<float>* terrainVertices = new std::vector<float>();
     std::vector<unsigned int>* terrainIndices = new std::vector<unsigned int>();
-
-    std::vector<float> heightMapValues = std::vector<float>();
-    float lowBound = 0;
-    float highBound = 0;
-
-    float step = 0.01f; //Tile size in world coords
-    int verticesWidth = (int)(widthOfTerrain / step);
-    int verticesDepth = (int)(depthOfTerrain / step);
-    
+   
     //Construct height map using perlin noise
     for (float x = 0; x < widthOfTerrain; x += step) {
         for (float z = 0; z < depthOfTerrain; z += step) {
@@ -178,16 +169,14 @@ void Forest::GenerateTerrain()
             float freq = 0.9f;
             float y = 0;
 
-            for (int i = 0; i < 5; i++) { //% octaves of noise
+            for (int i = 0; i < octaves; i++) { //Octaves of FBM noise
                 //Generate height value
-                float perlinValue = noise2(x * freq, z * freq);
+                float perlinValue = noise2(x * 0.5 * freq, z * 0.5 * freq);
                 y += perlinValue * amp;
-                //std::cout << "y = " << y << "\n";
                 amp *= 0.5;
                 freq *= 2;
             }
 
-            //std::cout << "y = " << y << "\n";
             heightMapValues.push_back(y);
 
             if (y < lowBound)
@@ -197,14 +186,16 @@ void Forest::GenerateTerrain()
         }
     }
 
-    
-
     for (int x = 0; x < verticesWidth; x++) {
         for (int z = 0; z < verticesDepth; z++) {
 
+            //Normalized height value (0 - 1) 
+            //Scale this value appropiately 
+            float y = (heightMapValues[x * verticesWidth + z] - lowBound) / (highBound - lowBound);
+            heightMapValues[x * verticesWidth + z] = y;
             //Positions
             terrainVertices->push_back(x * step);           
-            terrainVertices->push_back(heightMapValues[x * verticesWidth + z]); //Normalize this value
+            terrainVertices->push_back(y); 
             terrainVertices->push_back(z * step);
 
             //Normals (not really correct but works for now)
@@ -229,21 +220,22 @@ void Forest::GenerateTerrain()
             //Texture coordinates
             terrainVertices->push_back((float)x);
             terrainVertices->push_back((float)z);
-        }
-    }
 
-    //Construct indices
-    for (int x = 0; x < verticesWidth -1; x++) {
-        for (int z = 0; z < verticesDepth -1; z++) {
-            
-            terrainIndices->push_back(x + z * verticesDepth);
-            terrainIndices->push_back(x + 1 + z * verticesDepth);
-            terrainIndices->push_back(x + (z + 1) * verticesDepth);
-            terrainIndices->push_back(x + 1 + z * verticesDepth);
-            terrainIndices->push_back(x + 1 + (z + 1) * verticesDepth);
-            terrainIndices->push_back(x + (z + 1) * verticesDepth);          
+            //Construct and store indices
+            if (x < verticesWidth - 1 && z < verticesDepth - 1) {
+                terrainIndices->push_back(x + z * verticesDepth);
+                terrainIndices->push_back(x + 1 + z * verticesDepth);
+                terrainIndices->push_back(x + (z + 1) * verticesDepth);
+                terrainIndices->push_back(x + 1 + z * verticesDepth);
+                terrainIndices->push_back(x + 1 + (z + 1) * verticesDepth);
+                terrainIndices->push_back(x + (z + 1) * verticesDepth);
+            }
         }
     }
 
     terrain = std::make_unique<Geometry>(terrainVertices, terrainIndices);
+
+    //Clean up - these are stored the in geometry class
+    delete terrainVertices;
+    delete terrainIndices;
 }

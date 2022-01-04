@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+//Geometry class expects each vertex to be size: 3 * 3 * 2 * sizeof(float)
 class Geometry {
 
 private:
