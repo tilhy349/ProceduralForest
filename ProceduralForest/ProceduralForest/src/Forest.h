@@ -49,7 +49,7 @@ private:
 	void AddTree(glm::vec3 pos, float height, int maxDepth, int maxBranches);
 	void MakeBranches(const int maxDepth, int currentDepth, float currentHeight, int branches, float totalScale);
 	void CreateCylinder(int aSlices, float height, float topwidth, float bottomwidth);
-	void GenerateTerrain(std::vector<float>& heightMapValues);
+	void GenerateTerrain();
 };
 
 //Random generator of doubles, ints, floats

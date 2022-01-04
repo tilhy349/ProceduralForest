@@ -1,11 +1,26 @@
 #include "Forest.h"
 #include <iostream>
 
+float generateFBMNoiseValue(float xPos, float zPos, int octaves, float scaling = 1) {
+    float amp = 1;
+    float freq = 0.9f;
+    float totalNoiceVal = 0;
+
+    for (int i = 0; i < octaves; i++) { //Octaves of FBM noise
+        //Generate height value
+        float noise = noise2(xPos * scaling * freq, zPos * scaling * freq);
+        totalNoiceVal += noise * amp;
+        amp *= 0.5;
+        freq *= 2;
+    }
+
+    return totalNoiceVal;
+}
+
 Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{width}, depthOfTerrain{ depth }, 
     verticesWidth{ (int)(widthOfTerrain / step) }, verticesDepth{ (int)(depthOfTerrain / step) }
 {
-    std::vector<float> heightMapValues = std::vector<float>();
-    GenerateTerrain(heightMapValues);
+    GenerateTerrain();
 
     leafMatrixCol1 = new std::vector<vec3>();
     leafMatrixCol2 = new std::vector<vec3>();
@@ -28,7 +43,8 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
         for (float j = 0; j < depthOfTerrain; j += depthOfPatch) {
             float xPos = random<float>(i, i + widthOfPatch);
             float zPos = random<float>(j, j + depthOfPatch);
-            float yPos = heightMapValues[i * verticesWidth + j * 8 + 2]; //TODO: fix right y-position
+            //float yPos = heightMapValues[(int)xPos * verticesWidth + (int)zPos * 8 + 2]; //TODO: fix right y-position
+            float yPos = (generateFBMNoiseValue(xPos, zPos, octaves, 0.5) - lowBound) / (highBound - lowBound);
 
             AddTree(glm::vec3(xPos, yPos, zPos), 1.5, random<int>(3, 6), 3); 
             std::cout << "Spawning a tree at pos: (" << xPos << ", " << yPos << ", " << zPos << ")\n";
@@ -157,26 +173,18 @@ void Forest::CreateCylinder(int aSlices, float height, float topwidth, float bot
     }
 }
 
-void Forest::GenerateTerrain(std::vector<float>& heightMapValues)
+void Forest::GenerateTerrain()
 {
     std::vector<float>* terrainVertices = new std::vector<float>();
     std::vector<unsigned int>* terrainIndices = new std::vector<unsigned int>();
+
+    std::vector<float> heightMapValues = std::vector<float>();
    
     //Construct height map using perlin noise
     for (float x = 0; x < widthOfTerrain; x += step) {
         for (float z = 0; z < depthOfTerrain; z += step) {
-            float amp = 1;
-            float freq = 0.9f;
-            float y = 0;
-
-            for (int i = 0; i < octaves; i++) { //Octaves of FBM noise
-                //Generate height value
-                float perlinValue = noise2(x * 0.5 * freq, z * 0.5 * freq);
-                y += perlinValue * amp;
-                amp *= 0.5;
-                freq *= 2;
-            }
-
+ 
+            float y = generateFBMNoiseValue(x, z, octaves, 0.5);
             heightMapValues.push_back(y);
 
             if (y < lowBound)
@@ -239,3 +247,5 @@ void Forest::GenerateTerrain(std::vector<float>& heightMapValues)
     delete terrainVertices;
     delete terrainIndices;
 }
+
+
