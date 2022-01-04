@@ -13,10 +13,10 @@ class Forest
 private:
 	unsigned int m_RendererID;
 	int verticeCount;
-	float widthOfTerrain, depthOfTerrain;
+	const float widthOfTerrain, depthOfTerrain;
 
 	//Terrain specifications
-	const float verticalScale = 1.0f; //Vertical scale of height values
+	const float verticalScale = 0.7f; //Vertical scale of height values
 	const int octaves = 5; //Number of octaves for perlin noice
 	const float step = 0.01f; //Tile size in world coords
 
@@ -46,8 +46,8 @@ public:
 	std::vector<vec3>* leafMatrixCol4;
 
 private:
-	void AddTree(glm::vec3 pos, float height, int maxDepth, int maxBranches);
-	void MakeBranches(const int maxDepth, int currentDepth, float currentHeight, int branches, float totalScale);
+	void AddTree(const glm::vec3 pos, const float height, const int maxDepth, const int maxBranches);
+	void MakeBranches(const int maxDepth, int currentDepth, const float height, const int branches, float totalScale);
 	void CreateCylinder(int aSlices, float height, float topwidth, float bottomwidth);
 	void GenerateTerrain();
 };

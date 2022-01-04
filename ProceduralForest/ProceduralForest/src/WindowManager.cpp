@@ -1,4 +1,5 @@
 #include "WindowManager.h"
+#include <iostream>
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -128,6 +129,10 @@ void WindowManager::ProcessKeyEvent(int key, int action) {
             break;
         case GLFW_KEY_D:
             cameraPos += cameraRight * velocity;
+            break;
+        case GLFW_KEY_1:
+            seasonsManager.UpdateSeason();
+            std::cout << "Switching seasons. Current season is: " << static_cast<int>(seasonsManager.currentSeason) << "\n";
             break;
         }
 

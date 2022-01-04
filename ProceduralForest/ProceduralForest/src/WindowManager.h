@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <gtc/matrix_transform.hpp>
 #include <glm.hpp>
+#include "Season.h"
 
 class WindowManager {
 private:
@@ -27,6 +28,9 @@ private:
 	float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
 	float pitch = 0.0f;
 
+	// season
+	SeasonHandler seasonsManager;
+
 	void Init();
 
 public:
@@ -35,6 +39,7 @@ public:
 	//bool running !glfwWindowShouldClose(window)) {} return false; }
 	GLFWwindow* GetWindow() { return window; }
 	int CheckState() { return state; }
+	Season GetSeason() { return seasonsManager.currentSeason; }
 
 	void ProcessCursorPosition(double xpos, double ypos);
 	void ProcessKeyEvent(int key, int action);

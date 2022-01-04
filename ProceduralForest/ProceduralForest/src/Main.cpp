@@ -20,9 +20,6 @@ const unsigned int height = 800;
 const float widthOfTerrain = 10.0f;
 const float depthOfTerrain = 10.0f;
 
-enum Seasons { Winter, Spring, Summer, Fall };
-int currentSeason = 0;
-
 int main(void)
 {
     WindowManager window(width, height);
@@ -37,9 +34,12 @@ int main(void)
         glEnable(GL_DEPTH_TEST); //Render things according to depth
         glDisable(GL_CULL_FACE);
         glEnable(GL_BLEND); //Transparency
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);      
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);         
 
-        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 resetScale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+        glm::mat4 scalingMat = resetScale;
+        glm::mat4 resetTranslation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
+        glm::mat4 model = resetTranslation;
 
         //Shader shader("res/shaders/Basic.vert", "res/shaders/Basic.frag");
         Shader shader("res/shaders/textured.vert", "res/shaders/textured.frag");
@@ -81,13 +81,13 @@ int main(void)
         theForest.FreeMatrixData();
 
         std::vector<float> leafVertices{
-            -0.05f,  0.05f,  0.0f, 0.0f, 1.0f,
-            -0.05f, -0.05f,  0.0f, 0.0f, 0.0f,
-             0.05f, -0.05f,  0.0f, 1.0f, 0.0f, 
+            -0.025f,  0.025f,  0.0f, 0.0f, 1.0f,
+            -0.025f, -0.025f,  0.0f, 0.0f, 0.0f,
+             0.025f, -0.025f,  0.0f, 1.0f, 0.0f, 
 
-            -0.05f,  0.05f,  0.0f, 0.0f, 1.0f,
-             0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
-             0.05f,  0.05f,  0.0f, 1.0f, 1.0f
+            -0.025f,  0.025f,  0.0f, 0.0f, 1.0f,
+             0.025f, -0.025f,  0.0f, 1.0f, 0.0f,
+             0.025f,  0.025f,  0.0f, 1.0f, 1.0f
         };
         
         std::unique_ptr<VertexArray> leafVAO = std::make_unique<VertexArray>();
@@ -130,9 +130,7 @@ int main(void)
         Shader shaderLeaf("res/shaders/leaf.vert", "res/shaders/leaf.frag");
         shaderLeaf.Bind();
         shaderLeaf.SetUniformMat4f("projectionMatrix", window.proj);
-        //shaderLeaf.SetUniformMat4f("modelviewMatrix", view * model);
         shaderLeaf.SetUniform1f("time", time);
-        shaderLeaf.SetUniform1i("season", currentSeason);
         shaderLeaf.SetUniform1i("u_Texture", 0);       
 
         //float 
@@ -149,12 +147,8 @@ int main(void)
 
             shaderPhong.Bind();
             //model = glm::scale(model, glm::vec3(4, 4, 4));
+            model = glm::mat4(1.0f);
             shaderPhong.SetUniformMat4f("modelviewMatrix", window.viewMatrix * model);
-
-            //renderer.DrawModel(*ground, shader);
-            //renderer.Draw(*m_VAO, *m_IndexBuffer, shader);
-
-            //renderer.Clear();
 
             //----Render forest-----
             theForest.terrain->Render(shaderPhong); //Render terrain
@@ -162,6 +156,7 @@ int main(void)
             textureBark.Bind();
             shader.Bind();
             model = glm::mat4(1.0f);
+            //model = glm::scale(model, glm::vec3(2, 2, 2));
             shader.SetUniformMat4f("modelviewMatrix", window.viewMatrix * model);
 
             theForest.Render(); //Render trees
@@ -169,17 +164,35 @@ int main(void)
             //----Render leaves-----
             glDepthMask(GL_FALSE); //Disable writing into the depth buffer (not really sure why this is needed)
 
+            scalingMat = resetScale;
+            model = resetTranslation;
+            float degree = 0;
             textureLeaf.Bind();
             shaderLeaf.Bind();
-            
-            float degree = (float)fmod(time * M_PI / 10, 2 * M_PI);
-            if (degree < M_PI/2 || degree > 3*M_PI/2) {
-                shaderLeaf.SetUniform1f("time", time);
+
+            switch (window.GetSeason()) {
+                case Season::Winter:
+                    break;
+                case Season::Spring:
+                    scalingMat = glm::scale(scalingMat, glm::vec3(0.9f, 0.9f, 0.9f) * 0.5f * sin(time * 3.14f / 10.0f) + 0.5f);
+                    break;
+                case Season::Summer:
+                    degree = (float)fmod(time * M_PI / 10, 2 * M_PI);
+                    if (degree < M_PI / 2 || degree > 3 * M_PI / 2)
+                        shaderLeaf.SetUniform1f("time", time);
+                    break;
+                case Season::Fall:
+                    degree = (float)fmod(time * M_PI / 10, 2 * M_PI);
+                    //Get current position, move it down a bit -> update model matrix
+                    if (degree < M_PI / 2 || degree > 3 * M_PI / 2)
+                        model = glm::translate(model, glm::vec3(0.0f, -0.5f, 0.0f) * 0.5f * sin(time * 3.14f / 10.0f) + 0.5f);
+                
+                    break;
             }
-            
-            shaderLeaf.SetUniform1i("season", currentSeason);
-            
-            shaderLeaf.SetUniformMat4f("modelviewMatrix", window.viewMatrix * model);
+
+            shaderLeaf.SetUniformMat4f("viewMatrix", window.viewMatrix);
+            shaderLeaf.SetUniformMat4f("modelMatrix", model);
+            shaderLeaf.SetUniformMat4f("scalingMat", scalingMat);
             leafVAO->Bind();
             glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances); //Render leaves
 

@@ -35,19 +35,18 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
 
     //TODO: Create function which places the randomly generated trees over the terrain
 
-    const float widthOfPatch = widthOfTerrain / 3;
-    const float depthOfPatch = depthOfTerrain / 3;
+    const float widthOfPatch = widthOfTerrain / 5;
+    const float depthOfPatch = depthOfTerrain / 5;
 
     //Divide terrain into rectangular patches, generate a random position in that patch. Spawn random tree
     for (float i = 0; i < widthOfTerrain; i += widthOfPatch) {
         for (float j = 0; j < depthOfTerrain; j += depthOfPatch) {
             float xPos = random<float>(i, i + widthOfPatch);
             float zPos = random<float>(j, j + depthOfPatch);
-            //float yPos = heightMapValues[(int)xPos * verticesWidth + (int)zPos * 8 + 2]; //TODO: fix right y-position
-            float yPos = (generateFBMNoiseValue(xPos, zPos, octaves, 0.5) - lowBound) / (highBound - lowBound);
+            float yPos = (generateFBMNoiseValue(xPos, zPos, octaves, 0.5) - lowBound) / (highBound - lowBound) * verticalScale;
 
-            AddTree(glm::vec3(xPos, yPos, zPos), 1.5, random<int>(3, 6), 3); 
-            std::cout << "Spawning a tree at pos: (" << xPos << ", " << yPos << ", " << zPos << ")\n";
+            AddTree(glm::vec3(xPos, yPos, zPos), random<float>(0.5, 1.0), random<int>(3, 6), random<int>(3, 4));
+            //std::cout << "Spawning a tree at pos: (" << xPos << ", " << yPos << ", " << zPos << ")\n";
         }
     }
 
@@ -72,24 +71,25 @@ void Forest::Render()
     glDrawArrays(GL_TRIANGLES, 0, verticeCount);
 }
 
-void Forest::AddTree(glm::vec3 pos, float height, int maxDepth, int maxBranches)
+void Forest::AddTree(const glm::vec3 pos, const float height, const int maxDepth, const int maxBranches)
 {
     gluggPushMatrix();
     gluggTranslate(pos.x, pos.y, pos.z);
 
-    CreateCylinder(20, height, 0.07f, 0.14f);
+    CreateCylinder(16, height, height*0.035f, height*0.07f);
 
     MakeBranches(maxDepth, 0, height, maxBranches, 1.0);
     gluggPopMatrix();
 }
 
-void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHeight, int branches, float totalScale)
+void Forest::MakeBranches(const int maxDepth, int currentDepth, const float height, const int branches, float totalScale)
 {
+    //Maybe 50 % chance of branch growing up (0 rotation)
     
     for (int i = 0; i < branches; ++i) {
         if (currentDepth < maxDepth) {
             gluggPushMatrix();
-            gluggTranslate(0, currentHeight, 0);
+            gluggTranslate(0, height, 0);
             
             //Might want scaling that is not uniform, --> requires vec3 scaling to be sent
             //Higher currentDepth -> lower scaling (higher scaling value)
@@ -101,14 +101,14 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, float currentHei
             int random_ = rand() % (7 + 1 - 3) + 3;
             gluggRotate(3.14f / random_, 0.0, 0.0, 1.0);
 
-            CreateCylinder(20 / (currentDepth + 1), currentHeight, 0.07f, 0.14f);
+            CreateCylinder(20 / (currentDepth + 1), height, height * 0.035f, height * 0.07f);
 
-            MakeBranches(maxDepth, currentDepth + 1, currentHeight, branches, totalScale * randomScale);
+            MakeBranches(maxDepth, currentDepth + 1, height, branches, totalScale * randomScale);
         }
         else {
             //Create a leaf position
             gluggPushMatrix();
-            gluggTranslate(0, currentHeight + 0.05f, 0);
+            gluggTranslate(0, height + height * 0.025f, 0);
             //gluggScale(pow(1.5, maxDepth), pow(1.5, maxDepth), pow(1.5, maxDepth));
             gluggScale(1 / totalScale, 1 / totalScale, 1 / totalScale);
             mat4 currentMatrix = gluggCurrentMatrix();
@@ -203,7 +203,7 @@ void Forest::GenerateTerrain()
             heightMapValues[x * verticesWidth + z] = y;
             //Positions
             terrainVertices->push_back(x * step);           
-            terrainVertices->push_back(y); 
+            terrainVertices->push_back(y * verticalScale); 
             terrainVertices->push_back(z * step);
 
             //Normals (not really correct but works for now)
