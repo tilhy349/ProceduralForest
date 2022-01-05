@@ -9,6 +9,8 @@ in vec3 exSurface; // Phong (specular)
 in vec2 exTexCoord;
 in float vertexHeight;
 
+uniform float winter;
+
 vec2 random2(vec2 st)
 {
     st = vec2( dot(st,vec2(127.1,311.7)),
@@ -50,9 +52,9 @@ void main(void)
 	shade = 0.7*diffuse + 1.0*specular + 0.3;
 
 	//vec4 color = vec4(exTexCoord.x, exTexCoord.y, exTexCoord.y, 1.0);
-	vec4 color = vec4(vertexHeight*5, vertexHeight*2 + 0.2, 0.5, 1);
+	vec4 color = vec4(vertexHeight*5, vertexHeight*2 + 0.2, 0.5, 1) + vec4(0.9) * winter;
 	//color = vec4(0.5, 0.5, 0.0, 1.0);
 
-	outColor = vec4(shade, shade, shade, 1.0) * color + noise(vec2(exTexCoord * 10)) * vec4(0.5, 0.5, 0.0, 1.0);
+	//outColor = vec4(shade, shade, shade, 1.0) * color + noise(vec2(exTexCoord * 10)) * vec4(0.5, 0.5, 0.0, 1.0);
 	outColor = vec4(shade, shade, shade, 1.0) * color;
 }

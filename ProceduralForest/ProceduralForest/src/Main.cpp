@@ -52,8 +52,10 @@ int main(void)
         Shader shaderPhong("res/shaders/phong.vert", "res/shaders/phong.frag");
         shaderPhong.Bind();
 
+        float winter = 0.0f;
+
         shaderPhong.SetUniformMat4f("projectionMatrix", window.proj);
-        //shaderPhong.SetUniformMat4f("modelviewMatrix", view * model);
+        shaderPhong.SetUniform1f("winter", winter);
 
         Texture textureGrass("res/textures/grass.png");
         Texture textureBark("res/textures/bark.png");
@@ -128,9 +130,15 @@ int main(void)
         float time = 0.0f;
         float accelaration = -0.05f;
         float updatedYPos = 0.0f;
-        float currentVelocity = 0.0;
+        float currentVelocity = 0.0f;
         float beginFall = 0.0f;
         float beginSpring = 0.0f;
+
+        SeasonHandler* seasonManager = &window.seasonsManager;
+
+        //Variables for season handling, might move these to windowHandler
+        float timeSeasonStart = 0.0f; //Time passed since season begun
+        float timeSeasonCurrent = seasonManager->GetSeasonTime();
 
         Shader shaderLeaf("res/shaders/leaf.vert", "res/shaders/leaf.frag");
         shaderLeaf.Bind();
@@ -139,19 +147,29 @@ int main(void)
         shaderLeaf.SetUniformMat4f("modelMatrix", model);
         shaderLeaf.SetUniform1f("updatedYPos", updatedYPos);
 
-        shaderLeaf.SetUniform1f("time", time);
-        shaderLeaf.SetUniform1i("u_Texture", 0);       
+        shaderLeaf.SetUniform1f("time", timeSeasonCurrent);
+        shaderLeaf.SetUniform1i("u_Texture", 0);     
+
+        
 
         //float 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window.GetWindow()))
         {
             time = (float)glfwGetTime();
-            //std::cout << "TIME: " << time << "\n";
+
+            if (seasonManager->GetSeasonState()) {
+                seasonManager->SetSeasonState(false);
+                timeSeasonStart = time;
+                seasonManager->SetSeasonTime(0.0f);
+            }
+            else
+                seasonManager->SetSeasonTime(time - timeSeasonStart);
+            
             /* Render here */
             renderer.Clear();
 
-            //----Render ground-----
+            //---- Render terrain -----
             textureGrass.Bind();
 
             shaderPhong.Bind();
@@ -159,7 +177,7 @@ int main(void)
             model = glm::mat4(1.0f);
             shaderPhong.SetUniformMat4f("modelviewMatrix", window.viewMatrix * model);
 
-            //----Render forest-----
+            //---- Render forest -----
             theForest.terrain->Render(shaderPhong); //Render terrain
 
             textureBark.Bind();
@@ -170,40 +188,41 @@ int main(void)
 
             theForest.Render(); //Render trees
 
-            //----Render leaves-----
+            //---- Render leaves -----
             glDepthMask(GL_FALSE); //Disable writing into the depth buffer (not really sure why this is needed)
 
             model = glm::mat4(1.0f);
             float degree = 0.0f;
             updatedYPos = 0.0f;
+            winter = 0.0f;
+            timeSeasonCurrent = seasonManager->GetSeasonTime();
             textureLeaf.Bind();
             shaderLeaf.Bind();
 
-            switch (window.GetSeason()) {
+            switch (seasonManager->GetSeason()) {
                 case Season::Winter:
+                    winter = 0.5f * sin(timeSeasonCurrent * (float)M_PI / 9.0f + 3 * (float)M_PI / 2) + 0.5f;
                     model = glm::scale(model, glm::vec3(0.0, 0.0, 0.0));
                     break;
                 case Season::Spring:
-                    model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.9f) * 0.5f * sin(time * 3.14f / 10.0f) + 0.5f);
+                    if(timeSeasonCurrent == 0)
+                        shaderLeaf.SetUniform1f("time", timeSeasonCurrent); //TODO: Figure out why this isnt working
+
+                    model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.9f) * 
+                        0.5f * sin(timeSeasonCurrent * (float)M_PI / 18.0f + 3 * (float)M_PI / 2) + 0.5f);
                     break;
                 case Season::Summer:
-                    
-                    if (degree < M_PI / 2 || degree > 3 * M_PI / 2) {
-                        shaderLeaf.SetUniform1f("time", time);
-                        degree = (float)fmod(time * M_PI / 10, 2 * M_PI);
-                    }
-                    beginFall = 0.0f;
+                    shaderLeaf.SetUniform1f("time", timeSeasonCurrent);
+
                     break;
                 case Season::Fall:
-                    if (beginFall == 0.0) {
-                        beginFall = time;
-                        currentVelocity = 0.0;
-                    }
-                        
+                    if (timeSeasonCurrent == 0)
+                        currentVelocity = 0.0; //Reset velocity to resting state
+                       
                     //Update yPosition of the leaves to simulate falling 
                     //Update currentVelocity according to accelaration
-                    updatedYPos = currentVelocity * (time - beginFall); 
-                    currentVelocity = accelaration * (time - beginFall);
+                    updatedYPos = currentVelocity * timeSeasonCurrent;
+                    currentVelocity = accelaration * timeSeasonCurrent;
                     break;
             }
 
@@ -213,13 +232,20 @@ int main(void)
             leafVAO->Bind();
             glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances); //Render leaves
 
+            shaderPhong.Bind();
+            shaderPhong.SetUniform1f("winter", winter);
+
             glDepthMask(GL_TRUE); //Enable writing into the depth buffer
+
+            //If time has surpassed a certain mark --> change season
+            if (seasonManager->GetSeasonTime() > 18.0f) //Change this value to your liking
+                seasonManager->UpdateSeason();
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window.GetWindow());
 
             /* Poll for and process events */
-            glfwPollEvents();
+            glfwPollEvents();  
         }
 
     }

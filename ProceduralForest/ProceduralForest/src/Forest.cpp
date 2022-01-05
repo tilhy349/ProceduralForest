@@ -207,15 +207,19 @@ void Forest::GenerateTerrain()
             terrainVertices->push_back(z * step);
 
             //Normals (not really correct but works for now)
-            terrainVertices->push_back(0.0f);
+            /*terrainVertices->push_back(0.0f);
             terrainVertices->push_back(1.0f);
-            terrainVertices->push_back(0.0f);
+            terrainVertices->push_back(0.0f);*/
 
             //Correct normals
-            /*vec3 p1 = SetVec3(x + 1, noise2((x + 1) * 0.4, (z + 1) * 0.4), z + 1);
-            vec3 p2 = SetVec3(x + 1, noise2((x + 1) * 0.4, (z - 1) * 0.4), z - 1);
-            vec3 p3 = SetVec3(x - 1, noise2((x - 1) * 0.4, (z - 1) * 0.4), z - 1);
-            vec3 p4 = SetVec3(x - 1, noise2((x - 1) * 0.4, (z + 1) * 0.4), z + 1);
+            y = (generateFBMNoiseValue(x * step + step, z * step + step, octaves, 0.5) - lowBound) / (highBound - lowBound);
+            vec3 p1 = SetVec3(x * step + step, y, z * step + step);
+            y = (generateFBMNoiseValue(x * step + step, z * step - step, octaves, 0.5) - lowBound) / (highBound - lowBound);
+            vec3 p2 = SetVec3(x * step + step, y, z * step - step);
+            y = (generateFBMNoiseValue(x * step - step, z * step - step, octaves, 0.5) - lowBound) / (highBound - lowBound);
+            vec3 p3 = SetVec3(x * step - step, y, z * step - step);
+            y = (generateFBMNoiseValue(x * step - step, z * step + step, octaves, 0.5) - lowBound) / (highBound - lowBound);
+            vec3 p4 = SetVec3(x * step - step, y, z * step + step);
 
             vec3 v1 = VectorSub(p1, p3);
             vec3 v2 = VectorSub(p2, p4);
@@ -223,7 +227,7 @@ void Forest::GenerateTerrain()
             vec3 normal = CrossProduct(v1, v2);
             terrainVertices->push_back(normal.x);
             terrainVertices->push_back(normal.y);
-            terrainVertices->push_back(normal.z);*/
+            terrainVertices->push_back(normal.z);
 
             //Texture coordinates
             terrainVertices->push_back((float)x);
