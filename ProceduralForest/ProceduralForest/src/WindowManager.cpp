@@ -132,7 +132,7 @@ void WindowManager::ProcessKeyEvent(int key, int action) {
             break;
         case GLFW_KEY_1:
             seasonsManager.UpdateSeason();
-            std::cout << "Switching seasons. Current season is: " << static_cast<int>(seasonsManager.currentSeason) << "\n";
+            std::cout << "Switching seasons. Current season is: " << seasonsManager.CurrentSeasonToString() << "\n";
             break;
         }
 

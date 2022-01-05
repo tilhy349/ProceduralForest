@@ -38,8 +38,8 @@ int main(void)
 
         glm::mat4 resetScale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
         glm::mat4 scalingMat = resetScale;
-        glm::mat4 resetTranslation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
-        glm::mat4 model = resetTranslation;
+        //glm::mat4 resetTranslation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
+        glm::mat4 model = glm::mat4(1.0f);
 
         //Shader shader("res/shaders/Basic.vert", "res/shaders/Basic.frag");
         Shader shader("res/shaders/textured.vert", "res/shaders/textured.frag");
@@ -125,11 +125,20 @@ int main(void)
         instanceVBrow4.UnBind();
         glVertexAttribDivisor(5, 1); // tell OpenGL this is an instanced vertex attribute.
 
-        float time = 0;
+        float time = 0.0f;
+        float accelaration = -0.05f;
+        float updatedYPos = 0.0f;
+        float currentVelocity = 0.0;
+        float beginFall = 0.0f;
+        float beginSpring = 0.0f;
 
         Shader shaderLeaf("res/shaders/leaf.vert", "res/shaders/leaf.frag");
         shaderLeaf.Bind();
         shaderLeaf.SetUniformMat4f("projectionMatrix", window.proj);
+        shaderLeaf.SetUniformMat4f("viewMatrix", window.viewMatrix);
+        shaderLeaf.SetUniformMat4f("modelMatrix", model);
+        shaderLeaf.SetUniform1f("updatedYPos", updatedYPos);
+
         shaderLeaf.SetUniform1f("time", time);
         shaderLeaf.SetUniform1i("u_Texture", 0);       
 
@@ -164,35 +173,43 @@ int main(void)
             //----Render leaves-----
             glDepthMask(GL_FALSE); //Disable writing into the depth buffer (not really sure why this is needed)
 
-            scalingMat = resetScale;
-            model = resetTranslation;
-            float degree = 0;
+            model = glm::mat4(1.0f);
+            float degree = 0.0f;
+            updatedYPos = 0.0f;
             textureLeaf.Bind();
             shaderLeaf.Bind();
 
             switch (window.GetSeason()) {
                 case Season::Winter:
+                    model = glm::scale(model, glm::vec3(0.0, 0.0, 0.0));
                     break;
                 case Season::Spring:
-                    scalingMat = glm::scale(scalingMat, glm::vec3(0.9f, 0.9f, 0.9f) * 0.5f * sin(time * 3.14f / 10.0f) + 0.5f);
+                    model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.9f) * 0.5f * sin(time * 3.14f / 10.0f) + 0.5f);
                     break;
                 case Season::Summer:
-                    degree = (float)fmod(time * M_PI / 10, 2 * M_PI);
-                    if (degree < M_PI / 2 || degree > 3 * M_PI / 2)
+                    
+                    if (degree < M_PI / 2 || degree > 3 * M_PI / 2) {
                         shaderLeaf.SetUniform1f("time", time);
+                        degree = (float)fmod(time * M_PI / 10, 2 * M_PI);
+                    }
+                    beginFall = 0.0f;
                     break;
                 case Season::Fall:
-                    degree = (float)fmod(time * M_PI / 10, 2 * M_PI);
-                    //Get current position, move it down a bit -> update model matrix
-                    if (degree < M_PI / 2 || degree > 3 * M_PI / 2)
-                        model = glm::translate(model, glm::vec3(0.0f, -0.5f, 0.0f) * 0.5f * sin(time * 3.14f / 10.0f) + 0.5f);
-                
+                    if (beginFall == 0.0) {
+                        beginFall = time;
+                        currentVelocity = 0.0;
+                    }
+                        
+                    //Update yPosition of the leaves to simulate falling 
+                    //Update currentVelocity according to accelaration
+                    updatedYPos = currentVelocity * (time - beginFall); 
+                    currentVelocity = accelaration * (time - beginFall);
                     break;
             }
 
+            shaderLeaf.SetUniform1f("updatedYPos", updatedYPos);
             shaderLeaf.SetUniformMat4f("viewMatrix", window.viewMatrix);
             shaderLeaf.SetUniformMat4f("modelMatrix", model);
-            shaderLeaf.SetUniformMat4f("scalingMat", scalingMat);
             leafVAO->Bind();
             glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances); //Render leaves
 

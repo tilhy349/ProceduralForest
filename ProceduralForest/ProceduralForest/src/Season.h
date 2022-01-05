@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 enum class Season { Winter, Spring, Summer, Fall };
 
 struct SeasonHandler {
@@ -20,6 +21,25 @@ struct SeasonHandler {
 				currentSeason = Season::Winter;
 				break;
 		}
+	}
+
+	std::string CurrentSeasonToString() {
+		std::string season;
+		switch (currentSeason) {
+		case Season::Winter:
+			season = "Winter";
+			break;
+		case Season::Spring:
+			season = "Spring";
+			break;
+		case Season::Summer:
+			season = "Summer";
+			break;
+		case Season::Fall:
+			season = "Fall";
+			break;
+		}
+		return season;
 	}
 
 	
