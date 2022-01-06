@@ -26,11 +26,22 @@ private:
 	const int verticesWidth; //Number of vertices along width
 	const int verticesDepth; //Number of vertices along height
 
+	//Leaves data
+	std::unique_ptr<VertexBuffer> instanceVBrow1;
+	std::unique_ptr<VertexBuffer> instanceVBrow2;
+	std::unique_ptr<VertexBuffer> instanceVBrow3;
+	std::unique_ptr<VertexBuffer> instanceVBrow4;
+
+	std::unique_ptr<VertexArray> leafVAO;
+	std::unique_ptr<VertexBuffer> leafVB;
+	int numberOfInstances;
+
 public:
 	Forest(unsigned int program, float width, float depth);
 	~Forest();
 
 	void Render();
+	void RenderLeaves();
 	void FreeMatrixData() {
 		delete leafMatrixCol1;
 		delete leafMatrixCol2;
@@ -50,6 +61,7 @@ private:
 	void MakeBranches(const int maxDepth, int currentDepth, const float height, const int branches, float totalScale);
 	void CreateCylinder(int aSlices, float height, float topwidth, float bottomwidth);
 	void GenerateTerrain();
+	void GenerateLeaves();
 };
 
 //Random generator of doubles, ints, floats

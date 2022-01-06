@@ -51,6 +51,8 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
     }
 
     m_RendererID = gluggEnd(&verticeCount, program, 0);
+
+    GenerateLeaves();
 }
 
 Forest::~Forest()
@@ -69,6 +71,73 @@ void Forest::Render()
 {
     glBindVertexArray(m_RendererID);	// Select VAO
     glDrawArrays(GL_TRIANGLES, 0, verticeCount);
+}
+
+void Forest::RenderLeaves()
+{
+    leafVAO->Bind();
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances); //Render leaves
+}
+
+void Forest::GenerateLeaves() {
+
+    numberOfInstances = leafMatrixCol1->size();
+
+    instanceVBrow1 = std::make_unique<VertexBuffer>(static_cast<void*>(leafMatrixCol1->data()),
+        numberOfInstances * 3 * sizeof(float));
+    instanceVBrow2 = std::make_unique<VertexBuffer>(static_cast<void*>(leafMatrixCol2->data()),
+        numberOfInstances * 3 * sizeof(float));
+    instanceVBrow3 = std::make_unique<VertexBuffer>(static_cast<void*>(leafMatrixCol3->data()),
+        numberOfInstances * 3 * sizeof(float));
+    instanceVBrow4 = std::make_unique<VertexBuffer>(static_cast<void*>(leafMatrixCol4->data()),
+        numberOfInstances * 3 * sizeof(float));
+
+    FreeMatrixData();
+
+    std::vector<float> leafVertices{
+        -0.025f,  0.025f,  0.0f, 0.0f, 1.0f,
+        -0.025f, -0.025f,  0.0f, 0.0f, 0.0f,
+         0.025f, -0.025f,  0.0f, 1.0f, 0.0f,
+
+        -0.025f,  0.025f,  0.0f, 0.0f, 1.0f,
+         0.025f, -0.025f,  0.0f, 1.0f, 0.0f,
+         0.025f,  0.025f,  0.0f, 1.0f, 1.0f
+    };
+
+    leafVAO = std::make_unique<VertexArray>();
+    leafVB = std::make_unique<VertexBuffer>(static_cast<void*>(leafVertices.data()), leafVertices.size() * sizeof(float));
+
+    VertexBufferLayout layoutLeaf;
+    layoutLeaf.Push<float>(3);
+    layoutLeaf.Push<float>(2);
+
+    leafVAO->AddBuffer(*leafVB, layoutLeaf); //Sets vertexAttribs
+    leafVAO->Bind();
+
+    // also set instance data
+    glEnableVertexAttribArray(2);
+    instanceVBrow1->Bind(); // this attribute comes from a different vertex buffer
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    instanceVBrow1->UnBind();
+    glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
+
+    glEnableVertexAttribArray(3);
+    instanceVBrow2->Bind(); // this attribute comes from a different vertex buffer
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    instanceVBrow2->UnBind();
+    glVertexAttribDivisor(3, 1); // tell OpenGL this is an instanced vertex attribute.
+
+    glEnableVertexAttribArray(4);
+    instanceVBrow3->Bind(); // this attribute comes from a different vertex buffer
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    instanceVBrow3->UnBind();
+    glVertexAttribDivisor(4, 1); // tell OpenGL this is an instanced vertex attribute.
+
+    glEnableVertexAttribArray(5);
+    instanceVBrow4->Bind(); // this attribute comes from a different vertex buffer
+    glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    instanceVBrow4->UnBind();
+    glVertexAttribDivisor(5, 1); // tell OpenGL this is an instanced vertex attribute.
 }
 
 void Forest::AddTree(const glm::vec3 pos, const float height, const int maxDepth, const int maxBranches)

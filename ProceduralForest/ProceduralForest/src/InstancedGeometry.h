@@ -8,7 +8,7 @@ private:
 	std::vector<VertexBuffer> instancedVBs;
 
 public:
-	InstancedGeometry(std::vector<float>* verts, int noInstances);
+	InstancedGeometry(std::vector<float>* verts, std::vector<std::vector<vec3>>* VBs, int noInstances);
 	~InstancedGeometry();
 
 	void Render();

@@ -17,8 +17,8 @@ bool GLLogCall() {
 
 void Renderer::Clear() const
 {
-    //glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.65f, 0.85f, 1.0f, 1.0f);
 }
 
 void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const

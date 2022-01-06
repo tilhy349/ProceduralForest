@@ -180,5 +180,7 @@
     <None Include="res\shaders\leaf.vert" />
     <None Include="res\shaders\phong.vert" />
     <None Include="res\shaders\phong.frag" />
+    <None Include="res\shaders\snowflake.frag" />
+    <None Include="res\shaders\snowflake.vert" />
   </ItemGroup>
 </Project>

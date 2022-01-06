@@ -68,64 +68,60 @@ int main(void)
         Renderer renderer;
         
         //Test with own classes
-        //TODO: REMOVE THIS FROM MAIN INTO A FUNCTION
-        int numberOfInstances = theForest.leafMatrixCol1->size();
 
-        VertexBuffer instanceVBrow1(static_cast<void*>(theForest.leafMatrixCol1->data()),
-            numberOfInstances * 3 * sizeof(float));
-        VertexBuffer instanceVBrow2(static_cast<void*>(theForest.leafMatrixCol2->data()),
-            numberOfInstances * 3 * sizeof(float));
-        VertexBuffer instanceVBrow3(static_cast<void*>(theForest.leafMatrixCol3->data()),
-            numberOfInstances * 3 * sizeof(float));
-        VertexBuffer instanceVBrow4(static_cast<void*>(theForest.leafMatrixCol4->data()),
-            numberOfInstances * 3 * sizeof(float));
+        ///*std::vector<std::vector<vec3>> instanceData;
+        //instanceData.push_back(*theForest.leafMatrixCol1);
+        //instanceData.push_back(*theForest.leafMatrixCol2);
+        //instanceData.push_back(*theForest.leafMatrixCol3);
+        //instanceData.push_back(*theForest.leafMatrixCol4);*/
 
-        theForest.FreeMatrixData();
+        ////Snow
+        //std::vector<float> snowflakeVertices{
+        //    -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+        //    -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+        //     0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
 
-        std::vector<float> leafVertices{
-            -0.025f,  0.025f,  0.0f, 0.0f, 1.0f,
-            -0.025f, -0.025f,  0.0f, 0.0f, 0.0f,
-             0.025f, -0.025f,  0.0f, 1.0f, 0.0f, 
+        //    -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+        //     0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+        //     0.5f,  0.5f,  0.0f, 1.0f, 1.0f
+        //};
 
-            -0.025f,  0.025f,  0.0f, 0.0f, 1.0f,
-             0.025f, -0.025f,  0.0f, 1.0f, 0.0f,
-             0.025f,  0.025f,  0.0f, 1.0f, 1.0f
-        };
-        
-        std::unique_ptr<VertexArray> leafVAO = std::make_unique<VertexArray>();
-        VertexBuffer leafVB(static_cast<void*>(leafVertices.data()), leafVertices.size() * sizeof(float));
+        ////Generate positions
+        //std::vector<glm::vec3> snowflakePositions;
+        //const float widthOfPatch = widthOfTerrain / 5;
+        //const float depthOfPatch = depthOfTerrain / 5;
 
-        VertexBufferLayout layoutLeaf;
-        layoutLeaf.Push<float>(3);
-        layoutLeaf.Push<float>(2);
+        ////Divide terrain into rectangular patches, generate a random position in that patch. Spawn random snowflake
+        //for (float i = 0; i < widthOfTerrain; i += widthOfPatch) {
+        //    for (float j = 0; j < depthOfTerrain; j += depthOfPatch) {
+        //        float xPos = random<float>(i, i + widthOfPatch);
+        //        float zPos = random<float>(j, j + depthOfPatch);
 
-        leafVAO->AddBuffer(leafVB, layoutLeaf); //Sets vertexAttribs
-        leafVAO->Bind();
+        //        snowflakePositions.push_back(glm::vec3(xPos, 3.0, zPos));
+        //    }
+        //}
 
-        // also set instance data
-        glEnableVertexAttribArray(2);
-        instanceVBrow1.Bind(); // this attribute comes from a different vertex buffer
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        instanceVBrow1.UnBind();
-        glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
+        //int numberOfSnowflakes = snowflakePositions.size();
 
-        glEnableVertexAttribArray(3);
-        instanceVBrow2.Bind(); // this attribute comes from a different vertex buffer
-        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        instanceVBrow2.UnBind();
-        glVertexAttribDivisor(3, 1); // tell OpenGL this is an instanced vertex attribute.
+        //VertexBuffer instanceSnowPos(static_cast<void*>(snowflakePositions.data()),
+        //    numberOfSnowflakes * 3 * sizeof(float));
 
-        glEnableVertexAttribArray(4);
-        instanceVBrow3.Bind(); // this attribute comes from a different vertex buffer
-        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        instanceVBrow3.UnBind();
-        glVertexAttribDivisor(4, 1); // tell OpenGL this is an instanced vertex attribute.
+        //std::unique_ptr<VertexArray> snowflakeVAO = std::make_unique<VertexArray>();
+        //VertexBuffer snowflakeVB(static_cast<void*>(snowflakeVertices.data()), snowflakeVertices.size() * sizeof(float));
 
-        glEnableVertexAttribArray(5);
-        instanceVBrow4.Bind(); // this attribute comes from a different vertex buffer
-        glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        instanceVBrow4.UnBind();
-        glVertexAttribDivisor(5, 1); // tell OpenGL this is an instanced vertex attribute.
+        //VertexBufferLayout layoutSnowflake;
+        //layoutSnowflake.Push<float>(3);
+        //layoutSnowflake.Push<float>(2);
+
+        //snowflakeVAO->AddBuffer(snowflakeVB, layoutSnowflake); //Sets vertexAttribs
+        //snowflakeVAO->Bind();
+
+        //// also set instance data
+        //glEnableVertexAttribArray(2);
+        //instanceSnowPos.Bind(); // this attribute comes from a different vertex buffer
+        //glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        //instanceSnowPos.UnBind();
+        //glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
 
         float time = 0.0f;
         float accelaration = -0.05f;
@@ -148,9 +144,14 @@ int main(void)
         shaderLeaf.SetUniform1f("updatedYPos", updatedYPos);
 
         shaderLeaf.SetUniform1f("time", timeSeasonCurrent);
-        shaderLeaf.SetUniform1i("u_Texture", 0);     
+        shaderLeaf.SetUniform1i("u_Texture", 0);   
 
-        
+        Shader shaderSnow("res/shaders/snowflake.vert", "res/shaders/snowflake.frag");
+        shaderSnow.Bind();
+        shaderSnow.SetUniformMat4f("projectionMatrix", window.proj);
+        shaderSnow.SetUniformMat4f("viewMatrix", window.viewMatrix);
+        shaderSnow.SetUniform1i("u_Texture", 0);
+        shaderSnow.SetUniform1f("updatedYPos", updatedYPos);
 
         //float 
         /* Loop until the user closes the window */
@@ -203,6 +204,13 @@ int main(void)
                 case Season::Winter:
                     winter = 0.5f * sin(timeSeasonCurrent * (float)M_PI / 9.0f + 3 * (float)M_PI / 2) + 0.5f;
                     model = glm::scale(model, glm::vec3(0.0, 0.0, 0.0));
+                    //if (timeSeasonCurrent == 0)
+                    //    currentVelocity = 0.0; //Reset velocity to resting state
+
+                    ////Update yPosition of the leaves to simulate falling 
+                    ////Update currentVelocity according to accelaration
+                    //updatedYPos = currentVelocity * timeSeasonCurrent;
+                    //currentVelocity = accelaration * timeSeasonCurrent;
                     break;
                 case Season::Spring:
                     if(timeSeasonCurrent == 0)
@@ -229,13 +237,24 @@ int main(void)
             shaderLeaf.SetUniform1f("updatedYPos", updatedYPos);
             shaderLeaf.SetUniformMat4f("viewMatrix", window.viewMatrix);
             shaderLeaf.SetUniformMat4f("modelMatrix", model);
-            leafVAO->Bind();
-            glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances); //Render leaves
+
+            //leafVAO->Bind();
+            //glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfInstances); //Render leaves
+            theForest.RenderLeaves();
+
+            glDepthMask(GL_TRUE); //Enable writing into the depth buffer
+
+            //if (seasonManager->GetSeason() == Season::Winter) {
+                //TODO: Create and bind the right shader
+                //shaderSnow.Bind();
+                //snowflakeVAO->Bind();
+                //glDrawArraysInstanced(GL_TRIANGLES, 0, 6, numberOfSnowflakes); //Render snowflakes
+            //}
 
             shaderPhong.Bind();
             shaderPhong.SetUniform1f("winter", winter);
 
-            glDepthMask(GL_TRUE); //Enable writing into the depth buffer
+            
 
             //If time has surpassed a certain mark --> change season
             if (seasonManager->GetSeasonTime() > 18.0f) //Change this value to your liking
