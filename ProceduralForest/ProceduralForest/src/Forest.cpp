@@ -83,6 +83,12 @@ void Forest::GenerateLeaves() {
 
     numberOfInstances = leafMatrixCol1->size();
 
+    ///*std::vector<std::vector<vec3>> instanceData;
+    //instanceData.push_back(*theForest.leafMatrixCol1);
+    //instanceData.push_back(*theForest.leafMatrixCol2);
+    //instanceData.push_back(*theForest.leafMatrixCol3);
+    //instanceData.push_back(*theForest.leafMatrixCol4);*/
+
     instanceVBrow1 = std::make_unique<VertexBuffer>(static_cast<void*>(leafMatrixCol1->data()),
         numberOfInstances * 3 * sizeof(float));
     instanceVBrow2 = std::make_unique<VertexBuffer>(static_cast<void*>(leafMatrixCol2->data()),

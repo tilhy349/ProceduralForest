@@ -88,16 +88,10 @@ void main(void)
 	specular = max(specular, 0.0);
 	shade = 0.7*diffuse + 0.05*specular + 0.3;
 
-	//vec4 color = vec4(exTexCoord.x, exTexCoord.y, exTexCoord.y, 1.0);
-	//vec4 color = vec4(vertexHeight*5, vertexHeight*2 + 0.2, 0.5, 1) + vec4(0.9) * winter;
-    float noiseVal = 0.3 * abs(iqnoise(vec2(100 * pos.x, 100 * pos.y), 1.0, 0.1)) * (1 - winter);
+    float noiseVal = 0.05 * abs(iqnoise(vec2(100 * pos.x, 100 * pos.y), 1.0, 0.3)) * (1 - winter);
     float snowNoiseVal = 10 * abs(noise(vec2(0.1 * pos.x, 0.1 * pos.y)));
-	vec4 color = vec4(vec3(min(0.40 + noiseVal, 0.49), min(0.25 + noiseVal, 0.32), min(0.10 + noiseVal, 0.15)) , 1.0) + vec4(0.8) * winter;
-    //vec4 color = vec4(noiseVal, noiseVal, noiseVal, 1.0) + vec4(0.9)* winter;
-    //vec4 color = vec4(0.5, 0.6, 0.2, 1.0) + vec4(vec3(0.3, 0.3, 0.1) + noiseVal, 1.0);
+	vec4 color = vec4(vec3(min(0.39 + noiseVal, 0.46), min(0.24 + noiseVal, 0.30), min(0.10 + noiseVal, 0.15)) , 1.0) + vec4(0.85) * winter;
     color = color + vec4(-0.1, -0.05, 0.0, 0.0) * (1 - vertexHeight);
 
-	//outColor = vec4(shade, shade, shade, 1.0) * color + noise(vec2(exTexCoord * 10)) * vec4(0.5, 0.5, 0.0, 1.0);
 	outColor = vec4(shade, shade, shade, 1.0) * color - vec4(0.1, 0.1, 0.1, 0.0) * winter;
-    //outColor = color;
 }

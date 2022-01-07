@@ -9,5 +9,5 @@ void main(){
 
 	vec4 texColor = texture(u_Texture, texCoord);
 	//TODO: FIND THE VALUES FOR WHICH TIME IS BETWEEN PI/2 and 3PI/2
-	color = texColor;
+	color = texColor - vec4(0.0, 0.0, 0.0, 0.3);
 };

@@ -39,10 +39,11 @@ void main(){
     mat4 modelOffset = mat4(1.0, 0.0, 0.0, 0.0, 
                             0.0, 1.0, 0.0, 0.0, 
                             0.0, 0.0, 1.0, 0.0,
-                            position.x, position.y, position.z, 1.0);
+                            offset.x, offset.y, offset.z, 1.0);
     //modelOffset[4] = offset; create right translation using offset
     vec4 posWOffset = (modelOffset * vec4(1.0));
     float noiseValue = 3.0 * abs(noise(vec2(posWOffset.x * 10, posWOffset.z * 10)));
+    //0.5f * sin(timeSeasonCurrent * (float)M_PI / 9.0f + 3 * (float)M_PI / 2) + 0.5f
     mat4 translation = mat4(1.0, 0.0, 0.0, 0.0, 
                             0.0, 1.0, 0.0, 0.0, 
                             0.0, 0.0, 1.0, 0.0,
