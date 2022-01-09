@@ -35,8 +35,8 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
 
     //TODO: Create function which places the randomly generated trees over the terrain
 
-    const float widthOfPatch = widthOfTerrain / 5;
-    const float depthOfPatch = depthOfTerrain / 5;
+    const float widthOfPatch = widthOfTerrain / 6;
+    const float depthOfPatch = depthOfTerrain / 6;
 
     //Divide terrain into rectangular patches, generate a random position in that patch. Spawn random tree
     for (float i = 0; i < widthOfTerrain; i += widthOfPatch) {
@@ -45,7 +45,7 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
             float zPos = random<float>(j, j + depthOfPatch);
             float yPos = (generateFBMNoiseValue(xPos, zPos, octaves, 0.5) - lowBound) / (highBound - lowBound) * verticalScale;
 
-            AddTree(glm::vec3(xPos, yPos, zPos), random<float>(0.5, 1.0), random<int>(3, 6), random<int>(3, 4));
+            AddTree(glm::vec3(xPos, yPos, zPos), random<float>(0.5, 1.3), random<int>(3, 6), random<int>(3, 4));
             //std::cout << "Spawning a tree at pos: (" << xPos << ", " << yPos << ", " << zPos << ")\n";
         }
     }
@@ -82,12 +82,6 @@ void Forest::RenderLeaves()
 void Forest::GenerateLeaves() {
 
     numberOfInstances = leafMatrixCol1->size();
-
-    ///*std::vector<std::vector<vec3>> instanceData;
-    //instanceData.push_back(*theForest.leafMatrixCol1);
-    //instanceData.push_back(*theForest.leafMatrixCol2);
-    //instanceData.push_back(*theForest.leafMatrixCol3);
-    //instanceData.push_back(*theForest.leafMatrixCol4);*/
 
     instanceVBrow1 = std::make_unique<VertexBuffer>(static_cast<void*>(leafMatrixCol1->data()),
         numberOfInstances * 3 * sizeof(float));
@@ -176,7 +170,7 @@ void Forest::MakeBranches(const int maxDepth, int currentDepth, const float heig
             int random_ = rand() % (7 + 1 - 3) + 3;
             gluggRotate(3.14f / random_, 0.0, 0.0, 1.0);
 
-            CreateCylinder(20 / (currentDepth + 1), height, height * 0.035f, height * 0.07f);
+            CreateCylinder(16 / (currentDepth + 1), height, height * 0.035f, height * 0.07f);
 
             MakeBranches(maxDepth, currentDepth + 1, height, branches, totalScale * randomScale);
         }
@@ -280,11 +274,6 @@ void Forest::GenerateTerrain()
             terrainVertices->push_back(x * step);           
             terrainVertices->push_back(y * verticalScale); 
             terrainVertices->push_back(z * step);
-
-            //Normals (not really correct but works for now)
-            /*terrainVertices->push_back(0.0f);
-            terrainVertices->push_back(1.0f);
-            terrainVertices->push_back(0.0f);*/
 
             //Correct normals
             y = (generateFBMNoiseValue(x * step + step, z * step + step, octaves, 0.5) - lowBound) / (highBound - lowBound);

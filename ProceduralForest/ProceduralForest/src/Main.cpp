@@ -17,8 +17,10 @@
 const unsigned int width = 800;
 const unsigned int height = 800;
 
-const float widthOfTerrain = 10.0f;
-const float depthOfTerrain = 10.0f;
+const float widthOfTerrain = 15.0f;
+const float depthOfTerrain = 15.0f;
+
+const float seasonDuration = 26.0f;
 
 int main(void)
 {
@@ -53,18 +55,19 @@ int main(void)
         shaderPhong.Bind();
 
         float winter = 0.0f;
+        float summer = 0.0f;
 
         shaderPhong.SetUniformMat4f("projectionMatrix", window.proj);
         shaderPhong.SetUniform1f("winter", winter);
+        shaderPhong.SetUniform1f("summer", summer);
 
         Texture textureGrass("res/textures/grass.png");
-        Texture textureBark("res/textures/bark.png");
+        Texture textureBark("res/textures/tree.png");
         Texture textureLeaf("res/textures/leaf2.png");
         Texture textureSnow("res/textures/snow.png");
         textureBark.Bind();
 
         Forest theForest(shader.GetRendererID(), widthOfTerrain, depthOfTerrain);
-        //std::cout << "number of leaves " << theForest.leafPositions.size();
 
         Renderer renderer;
         
@@ -72,19 +75,19 @@ int main(void)
 
         //Snow
         std::vector<float> snowflakeVertices{
-            -0.05f,  0.05f,  0.0f, 0.0f, 1.0f,
-            -0.05f, -0.05f,  0.0f, 0.0f, 0.0f,
-             0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+            -0.025f,  0.025f,  0.0f, 0.0f, 1.0f,
+            -0.025f, -0.025f,  0.0f, 0.0f, 0.0f,
+             0.025f, -0.025f,  0.0f, 1.0f, 0.0f,
 
-            -0.05f,  0.05f,  0.0f, 0.0f, 1.0f,
-             0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
-             0.05f,  0.05f,  0.0f, 1.0f, 1.0f
+            -0.025f,  0.025f,  0.0f, 0.0f, 1.0f,
+             0.025f, -0.025f,  0.0f, 1.0f, 0.0f,
+             0.025f,  0.025f,  0.0f, 1.0f, 1.0f
         };
 
         //Generate positions
         std::vector<vec3> snowflakePositions;
-        const float widthOfPatch = widthOfTerrain / 12;
-        const float depthOfPatch = depthOfTerrain / 12;
+        const float widthOfPatch = widthOfTerrain / 20;
+        const float depthOfPatch = depthOfTerrain / 20;
 
         //Divide terrain into rectangular patches, generate a random position in that patch. Spawn random snowflake
         for (float i = 0; i < widthOfTerrain; i += widthOfPatch) {
@@ -127,6 +130,7 @@ int main(void)
         float accSnow = -0.5f;
         float updatedYPos = 0.0f;
         float currentVelocity = 0.0f;
+        bool startFall = true;
        
         float timeSeasonStart = 0.0f; //Time passed since season begun
         float timeSeasonCurrent = seasonManager->GetSeasonTime();
@@ -147,39 +151,6 @@ int main(void)
         shaderSnow.SetUniformMat4f("viewMatrix", window.viewMatrix);
         shaderSnow.SetUniform1i("u_Texture", 0);
         shaderSnow.SetUniform1f("updatedYPos", updatedYPos);
-
-        ////Test with rendering to texture
-        //unsigned int frameBuffer = 0;
-        //glGenFramebuffers(1, &frameBuffer);
-        //glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
-        //// The texture we're going to render to //Might be able to use texture-class
-        //unsigned int renderedTexture;
-        //glGenTextures(1, &renderedTexture);
-
-        //// "Bind" the newly created texture : all future texture functions will modify this texture
-        //glBindTexture(GL_TEXTURE_2D, renderedTexture);
-
-        //// Give an empty image to OpenGL ( the last "0" )
-        //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 768, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-        //// Poor filtering. Needed !
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-        //// The depth buffer
-        //unsigned int depthrenderbuffer;
-        //glGenRenderbuffers(1, &depthrenderbuffer);
-        //glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
-        //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
-        //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
-
-        //// Set "renderedTexture" as our colour attachement #0
-        //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
-
-        //// Set the list of draw buffers.
-        //GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-        //glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
          
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window.GetWindow()))
@@ -202,13 +173,13 @@ int main(void)
             float degree = 0.0f;
             updatedYPos = 0.0f;
             winter = 0.0f;
+            summer = 0.0f;
             timeSeasonCurrent = seasonManager->GetSeasonTime();
             
             //---- Render terrain -----
             textureGrass.Bind();
 
             shaderPhong.Bind();
-            //model = glm::scale(model, glm::vec3(4, 4, 4));
             model = glm::mat4(1.0f);
             shaderPhong.SetUniformMat4f("modelviewMatrix", window.viewMatrix * model);
 
@@ -217,7 +188,6 @@ int main(void)
 
             textureBark.Bind();
             shader.Bind();
-            //model = glm::scale(model, glm::vec3(2, 2, 2));
             shader.SetUniformMat4f("modelviewMatrix", window.viewMatrix * model);
 
             theForest.Render(); //Render trees
@@ -230,7 +200,7 @@ int main(void)
 
             switch (seasonManager->GetSeason()) {
                 case Season::Winter:
-                    winter = 0.5f * sin(timeSeasonCurrent * (float)M_PI / 9.0f + 3 * (float)M_PI / 2) + 0.5f;
+                    winter = 0.5f * sin(timeSeasonCurrent * (float)M_PI / (seasonDuration/2) + 3 * (float)M_PI / 2) + 0.5f;
                     model = glm::scale(model, glm::vec3(0.0, 0.0, 0.0));
                     if (timeSeasonCurrent == 0)
                         currentVelocity = 0.0; //Reset velocity to resting state
@@ -245,20 +215,30 @@ int main(void)
                         shaderLeaf.SetUniform1f("time", timeSeasonCurrent); //TODO: Figure out why this isnt working
 
                     model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.9f) * 
-                        0.5f * sin(timeSeasonCurrent * (float)M_PI / 18.0f + 3 * (float)M_PI / 2) + 0.5f);
+                        0.5f * sin(timeSeasonCurrent * (float)M_PI / seasonDuration + 3 * (float)M_PI / 2) + 0.5f);
                     break;
                 case Season::Summer:
-                    shaderLeaf.SetUniform1f("time", timeSeasonCurrent);
-
+                    summer = 0.5f * sin(timeSeasonCurrent * (float)M_PI / (seasonDuration/2) + 3 * (float)M_PI / 2) + 0.5f;
+                    
                     break;
                 case Season::Fall:
-                    if (timeSeasonCurrent == 0)
-                        currentVelocity = 0.0; //Reset velocity to resting state
-                       
-                    //Update yPosition of the leaves to simulate falling 
-                    //Update currentVelocity according to accelaration
-                    updatedYPos = currentVelocity * timeSeasonCurrent;
-                    currentVelocity = accelaration * timeSeasonCurrent;
+                    if (timeSeasonCurrent < seasonDuration / 2) {
+                        shaderLeaf.SetUniform1f("time", timeSeasonCurrent);
+                        startFall = true;
+                    }                      
+                    else {
+                        if (startFall) {
+                            currentVelocity = 0.0; //Reset velocity to resting state
+                            startFall = false;
+                        }
+                            
+                        //Update yPosition of the leaves to simulate falling 
+                        //Update currentVelocity according to accelaration
+                        if (timeSeasonCurrent > seasonDuration - 4.0f)
+                            accelaration -= 0.05f;
+                        updatedYPos = currentVelocity * (timeSeasonCurrent - seasonDuration / 2);
+                        currentVelocity = accelaration * (timeSeasonCurrent - seasonDuration / 2);
+                    }
                     break;
             }
 
@@ -271,7 +251,7 @@ int main(void)
 
             glDepthMask(GL_TRUE); //Enable writing into the depth buffer
 
-            if (seasonManager->GetSeason() == Season::Winter && timeSeasonCurrent < 12.0f) {
+            if (seasonManager->GetSeason() == Season::Winter && timeSeasonCurrent < seasonDuration - 6.0f) {
                 //TODO: Create and bind the right shader
                 textureSnow.Bind();
                 shaderSnow.Bind();
@@ -283,9 +263,10 @@ int main(void)
 
             shaderPhong.Bind();
             shaderPhong.SetUniform1f("winter", winter);
+            shaderPhong.SetUniform1f("summer", summer);
 
             //If time has surpassed a certain mark --> change season
-            if (timeSeasonCurrent > 18.0f) //Change this value to your liking
+            if (timeSeasonCurrent > seasonDuration) //Change this value to your liking
                 seasonManager->UpdateSeason();
 
             /* Swap front and back buffers */

@@ -11,28 +11,7 @@ in float vertexHeight;
 in vec2 pos; //Position not multiplied with view
 
 uniform float winter;
-
-vec2 random2(vec2 st)
-{
-    st = vec2( dot(st,vec2(127.1,311.7)),
-              dot(st,vec2(269.5,183.3)) );
-    return -1.0 + 2.0*fract(sin(st)*43758.5453123);
-}
-
-// Gradient Noise by Inigo Quilez - iq/2013
-// https://www.shadertoy.com/view/XdXGW8
-float noise(vec2 st)
-{
-    vec2 i = floor(st);
-    vec2 f = fract(st);
-
-    vec2 u = f*f*(3.0-2.0*f);
-
-    return mix( mix( dot( random2(i + vec2(0.0,0.0) ), f - vec2(0.0,0.0) ),
-                     dot( random2(i + vec2(1.0,0.0) ), f - vec2(1.0,0.0) ), u.x),
-                mix( dot( random2(i + vec2(0.0,1.0) ), f - vec2(0.0,1.0) ),
-                     dot( random2(i + vec2(1.0,1.0) ), f - vec2(1.0,1.0) ), u.x), u.y);
-}
+uniform float summer;
 
 // Voronoise Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
@@ -89,9 +68,9 @@ void main(void)
 	shade = 0.7*diffuse + 0.05*specular + 0.3;
 
     float noiseVal = 0.05 * abs(iqnoise(vec2(100 * pos.x, 100 * pos.y), 1.0, 0.3)) * (1 - winter);
-    float snowNoiseVal = 10 * abs(noise(vec2(0.1 * pos.x, 0.1 * pos.y)));
-	vec4 color = vec4(vec3(min(0.39 + noiseVal, 0.46), min(0.24 + noiseVal, 0.30), min(0.10 + noiseVal, 0.15)) , 1.0) + vec4(0.85) * winter;
-    color = color + vec4(-0.1, -0.05, 0.0, 0.0) * (1 - vertexHeight);
+	vec4 color = vec4(vec3(min(0.39 + noiseVal, 0.46), min(0.24 + noiseVal, 0.30), min(0.10 + noiseVal, 0.15)) , 1.0) + vec4(0.85) * winter; //Add white snow during winter
+    color = color * (1 - summer * 0.5) + vec4(0.15, 0.22, 0.06, 1.0) * summer; //Add green grass during summer
+    color = color + vec4(-0.2, -0.1, 0.0, 0.0) * (1 - vertexHeight); //Add variations of color depending on height of terrain
 
-	outColor = vec4(shade, shade, shade, 1.0) * color - vec4(0.1, 0.1, 0.1, 0.0) * winter;
+	outColor = vec4(shade, shade, shade, 1.0) * color - vec4(0.1, 0.1, 0.1, 0.0) * winter; //Reduce light during winter so the snow does not reflect as much light
 }
