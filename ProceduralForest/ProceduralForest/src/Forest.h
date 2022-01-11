@@ -18,7 +18,7 @@ private:
 	//Terrain specifications
 	const float verticalScale = 0.7f; //Vertical scale of height values
 	const int octaves = 5; //Number of octaves for perlin noice
-	const float step = 0.02f; //Tile size in world coords
+	const float step = 0.01f; //Tile size in world coords
 
 	float lowBound = 0; //Low-bound for noise values
 	float highBound = 0; //High-bound for noise values

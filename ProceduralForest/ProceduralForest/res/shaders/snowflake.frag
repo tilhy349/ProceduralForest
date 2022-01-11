@@ -8,6 +8,5 @@ uniform sampler2D u_Texture;
 void main(){
 
 	vec4 texColor = texture(u_Texture, texCoord);
-	//TODO: FIND THE VALUES FOR WHICH TIME IS BETWEEN PI/2 and 3PI/2
-	color = texColor - vec4(0.0, 0.0, 0.0, 0.3);
+	color = texColor - vec4(0.0, 0.0, 0.0, 0.3); //Make the snowflake a bit more transparent
 };

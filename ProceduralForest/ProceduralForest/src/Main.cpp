@@ -14,11 +14,11 @@
 #include <iostream>
 #include <vector>
 
-const unsigned int width = 800;
-const unsigned int height = 800;
+const unsigned int width = 1080;
+const unsigned int height = 1080;
 
-const float widthOfTerrain = 15.0f;
-const float depthOfTerrain = 15.0f;
+const float widthOfTerrain = 8.0f;
+const float depthOfTerrain = 8.0f;
 
 const float seasonDuration = 26.0f;
 
@@ -180,7 +180,6 @@ int main(void)
             textureGrass.Bind();
 
             shaderPhong.Bind();
-            model = glm::mat4(1.0f);
             shaderPhong.SetUniformMat4f("modelviewMatrix", window.viewMatrix * model);
 
             //---- Render forest -----
@@ -212,9 +211,9 @@ int main(void)
                     break;
                 case Season::Spring:
                     if(timeSeasonCurrent == 0)
-                        shaderLeaf.SetUniform1f("time", timeSeasonCurrent); //TODO: Figure out why this isnt working
+                        shaderLeaf.SetUniform1f("time", timeSeasonCurrent); 
 
-                    model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.9f) * 
+                    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f) * 
                         0.5f * sin(timeSeasonCurrent * (float)M_PI / seasonDuration + 3 * (float)M_PI / 2) + 0.5f);
                     break;
                 case Season::Summer:
@@ -235,7 +234,7 @@ int main(void)
                         //Update yPosition of the leaves to simulate falling 
                         //Update currentVelocity according to accelaration
                         if (timeSeasonCurrent > seasonDuration - 4.0f)
-                            accelaration -= 0.05f;
+                            accelaration -= 0.0005f;
                         updatedYPos = currentVelocity * (timeSeasonCurrent - seasonDuration / 2);
                         currentVelocity = accelaration * (timeSeasonCurrent - seasonDuration / 2);
                     }

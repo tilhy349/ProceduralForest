@@ -9,7 +9,7 @@ layout(location = 5) in vec3 offsetMatrixCol4;
 
 out vec2 texCoord;
 
-uniform float updatedYPos;
+uniform float updatedYPos; //Updated position used for fall season
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -38,10 +38,16 @@ float noise(vec2 st)
 }
 
 void main(){
-
+    //Construct mat4 modelOffset matrix using the 4 input buffer values
     mat4 modelOffset = mat4(vec4(offsetMatrixCol1, 0.0), vec4(offsetMatrixCol2, 0.0), vec4(offsetMatrixCol3, 0.0), vec4(offsetMatrixCol4, 1.0));
+    
+    //Calculate the position of the instance to be used to create gradient noise
     vec4 posWOffset = (modelOffset * vec4(1.0));
+    
+    //Caluculate gradient noise
     float noiseValue = 3.0 * abs(noise(vec2(posWOffset.x * 10, posWOffset.z * 10)));
+    
+    //Create translation matrix using updatedYPos and noiseValue
     mat4 translation = mat4(1.0, 0.0, 0.0, 0.0, 
                             0.0, 1.0, 0.0, 0.0, 
                             0.0, 0.0, 1.0, 0.0,

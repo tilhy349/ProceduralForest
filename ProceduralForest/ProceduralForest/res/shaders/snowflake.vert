@@ -40,10 +40,14 @@ void main(){
                             0.0, 1.0, 0.0, 0.0, 
                             0.0, 0.0, 1.0, 0.0,
                             offset.x, offset.y, offset.z, 1.0);
-    //modelOffset[4] = offset; create right translation using offset
+
+    //Calculate position with offset to use when creating the noiseValue
     vec4 posWOffset = (modelOffset * vec4(1.0));
+
+    //Calculate gradient noise
     float noiseValue = 3.0 * abs(noise(vec2(posWOffset.x * 10, posWOffset.z * 10)));
-    //0.5f * sin(timeSeasonCurrent * (float)M_PI / 9.0f + 3 * (float)M_PI / 2) + 0.5f
+    
+    //Construct translation matrix
     mat4 translation = mat4(1.0, 0.0, 0.0, 0.0, 
                             0.0, 1.0, 0.0, 0.0, 
                             0.0, 0.0, 1.0, 0.0,

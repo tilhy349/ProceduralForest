@@ -153,7 +153,6 @@ void Forest::AddTree(const glm::vec3 pos, const float height, const int maxDepth
 
 void Forest::MakeBranches(const int maxDepth, int currentDepth, const float height, const int branches, float totalScale)
 {
-    //Maybe 50 % chance of branch growing up (0 rotation)
     
     for (int i = 0; i < branches; ++i) {
         if (currentDepth < maxDepth) {

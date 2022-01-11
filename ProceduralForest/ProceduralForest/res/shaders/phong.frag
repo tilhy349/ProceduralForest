@@ -67,8 +67,11 @@ void main(void)
 	specular = max(specular, 0.0);
 	shade = 0.7*diffuse + 0.05*specular + 0.3;
 
+    //Calculate voronoi noise value using the position not multiplied with the view matrix
     float noiseVal = 0.05 * abs(iqnoise(vec2(100 * pos.x, 100 * pos.y), 1.0, 0.3)) * (1 - winter);
-	vec4 color = vec4(vec3(min(0.39 + noiseVal, 0.46), min(0.24 + noiseVal, 0.30), min(0.10 + noiseVal, 0.15)) , 1.0) + vec4(0.85) * winter; //Add white snow during winter
+	
+    //Calculated the output color by adding noise, and the corresponding parameters for seasons
+    vec4 color = vec4(vec3(min(0.39 + noiseVal, 0.46), min(0.24 + noiseVal, 0.30), min(0.10 + noiseVal, 0.15)) , 1.0) + vec4(0.85) * winter; //Add white snow during winter
     color = color * (1 - summer * 0.5) + vec4(0.15, 0.22, 0.06, 1.0) * summer; //Add green grass during summer
     color = color + vec4(-0.2, -0.1, 0.0, 0.0) * (1 - vertexHeight); //Add variations of color depending on height of terrain
 
