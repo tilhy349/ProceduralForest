@@ -54,9 +54,6 @@
     <ClCompile Include="src\vendor\noise\noise1234.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\vendor\noise\cellular.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\WindowManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -99,9 +96,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\vendor\noise\noise1234.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\vendor\noise\cellular.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\WindowManager.h">
