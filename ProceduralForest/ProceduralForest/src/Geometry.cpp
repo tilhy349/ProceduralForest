@@ -2,6 +2,7 @@
 
 Geometry::Geometry(std::vector<float>* verts, std::vector<unsigned int>* inds)
 {
+    //Store the data from the vertices and indices in the geomerty instance
     vertices = *verts;
     indices = *inds;
 
@@ -9,6 +10,7 @@ Geometry::Geometry(std::vector<float>* verts, std::vector<unsigned int>* inds)
 
     m_VB = std::make_unique<VertexBuffer>(static_cast<void*>(vertices.data()), vertices.size() * sizeof(float));
 
+    //Specify the layout of the buffer, 3 floats + 3 floats + 2 floats
     VertexBufferLayout layout;
     layout.Push<float>(3);
     layout.Push<float>(3);
@@ -31,6 +33,7 @@ void Geometry::Bind() const
 
 void Geometry::Render(Shader& shader)
 {
+    //Bind the needed buffers
     shader.Bind();
     Bind();
 

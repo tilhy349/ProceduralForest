@@ -188,6 +188,8 @@
     <None Include="res\shaders\snowflake.vert" />
     <None Include="res\shaders\textured.frag" />
     <None Include="res\shaders\textured.vert" />
+    <None Include="res\shaders\tree.frag" />
+    <None Include="res\shaders\tree.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

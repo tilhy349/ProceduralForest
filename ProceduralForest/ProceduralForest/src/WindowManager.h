@@ -44,4 +44,5 @@ public:
 
 	glm::mat4 viewMatrix;
 	glm::mat4 proj;
+	int treeTextureMode;
 };

@@ -32,8 +32,6 @@ void WindowManager::Init()
     // Determine the desktop size
     vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-    // Open a square window (aspect 1:1) to fill half the screen height
-
     window = glfwCreateWindow(width, height, "Procedural Forest - TNM084", NULL, NULL);
 
     if (!window)
@@ -42,7 +40,6 @@ void WindowManager::Init()
         state = -1;
     }
 
-    //glfwSetWindowUserPointer()
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
@@ -61,6 +58,7 @@ WindowManager::WindowManager(const int windowWidth, const int windowHeight): wid
     Init();
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-10.0f / 2, -1.5, -10.0f / 2));
     proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 1000.0f);
+    treeTextureMode = 0;
 }
 
 void WindowManager::ProcessCursorPosition(double xpos, double ypos){
@@ -71,14 +69,12 @@ void WindowManager::ProcessCursorPosition(double xpos, double ypos){
         firstMouse = false;
     }
 
-    //glm::vec3 position(view[3][0], view[3][1], view[3][2]);
-
     double xoffset = xpos - lastMousePosX;
     double yoffset = lastMousePosY - ypos; // reversed since y-coordinates go from bottom to top
     lastMousePosX = xpos;
     lastMousePosY = ypos;
 
-    float sensitivity = 0.05f; // change this value to your liking
+    float sensitivity = 0.1f; 
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
@@ -133,6 +129,12 @@ void WindowManager::ProcessKeyEvent(int key, int action) {
         case GLFW_KEY_1:
             seasonsManager.UpdateSeason();
             std::cout << "Switching seasons. Current season is: " << seasonsManager.CurrentSeasonToString() << "\n";
+            break;
+        case GLFW_KEY_2:
+            if (treeTextureMode == 0)
+                treeTextureMode = 1;
+            else
+                treeTextureMode = 0;
             break;
         }
 

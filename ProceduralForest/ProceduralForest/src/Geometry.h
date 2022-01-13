@@ -26,5 +26,9 @@ public:
 	void Bind() const;
 	inline unsigned int GetCount() const { return m_IndexBuffer->GetCount(); };
 
+	/// <summary>
+	/// Render the geometry using the specified shader. The draw call is executed using DrawElements.
+	/// </summary>
+	/// <param name="shader">The shader to render the geometry.</param>
 	void Render(Shader& shader);
 };

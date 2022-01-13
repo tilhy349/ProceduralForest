@@ -1,6 +1,7 @@
 #include "Forest.h"
 #include <iostream>
 
+//Function to generate FBM-noise which returns the nosie values
 float generateFBMNoiseValue(float xPos, float zPos, int octaves, float scaling = 1) {
     float amp = 1;
     float freq = 0.9f;
@@ -33,8 +34,6 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
 
     gluggBegin(GLUGG_TRIANGLES);
 
-    //TODO: Create function which places the randomly generated trees over the terrain
-
     const float widthOfPatch = widthOfTerrain / 6;
     const float depthOfPatch = depthOfTerrain / 6;
 
@@ -57,14 +56,13 @@ Forest::Forest(unsigned int program, float width, float depth) : widthOfTerrain{
 
 Forest::~Forest()
 {
-    //TODO: Check how this works
-    /*if (leafMatrixCol1 != nullptr) {
-        delete leafMatrixCol1;
-        delete leafMatrixCol2;
-        delete leafMatrixCol3;
-        delete leafMatrixCol4;
-    }*/
-    
+    leafVAO.reset();
+    leafVB.reset();
+    instanceVBrow1.reset();
+    instanceVBrow2.reset();
+    instanceVBrow3.reset();
+    instanceVBrow4.reset();
+    terrain.reset();
 }
 
 void Forest::Render()

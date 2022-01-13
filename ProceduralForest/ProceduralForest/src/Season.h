@@ -8,14 +8,6 @@ private:
 	bool newSeasonJustBegan = true;
 	float seasonTime = 0.0f;
 
-	//Variables for winter
-
-	//Variables for spring
-
-	//Variables for summer
-
-	//Variables for fall
-
 public:
 	void UpdateSeason() {
 		newSeasonJustBegan = true;
